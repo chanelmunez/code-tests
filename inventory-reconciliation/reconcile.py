@@ -8,7 +8,6 @@ Usage:
 """
 
 import argparse
-import sys
 from pathlib import Path
 
 from reconciliation.loader import load_snapshot
@@ -92,7 +91,7 @@ def main(argv: list[str] | None = None) -> None:
     print(f"  Removed (only in snapshot 1):  {summary['removed']}")
     print(f"  Changed:                       {summary['changed']}")
     print(f"  Unchanged:                     {summary['unchanged']}")
-    print(f"  Skipped (duplicate SKUs):      {summary['skipped_due_to_duplicates']}")
+    print(f"  Skipped (data quality errors): {summary['skipped_due_to_errors']}")
     print(f"  Data quality issues:           {summary['quality_issues']}")
     print("=" * 50)
 

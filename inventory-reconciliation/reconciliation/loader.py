@@ -48,8 +48,8 @@ def load_snapshot(path: str | Path) -> pd.DataFrame:
             f"Available columns: {list(df.columns)}"
         )
 
-    # Keep only standard columns in fixed order
-    ordered_columns = ["sku", "name", "quantity", "location", "date"]
-    df = df[ordered_columns]
+    # Keep only standard columns in a deterministic order.
+    # Using a list (not set) prevents column shuffling across runs.
+    df = df[["sku", "name", "quantity", "location", "date"]]
 
     return df

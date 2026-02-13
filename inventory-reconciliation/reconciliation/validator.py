@@ -53,7 +53,7 @@ def find_null_fields(df: pd.DataFrame, snapshot_label: str) -> list[QualityIssue
     """Flag rows with null or empty required fields."""
     issues: list[QualityIssue] = []
 
-    for col in ["sku", "name", "quantity"]:
+    for col in ["sku", "name", "quantity", "location", "date"]:
         nulls = df[df[col].isna() | (df[col].astype(str).str.strip() == "")]
         for _, row in nulls.iterrows():
             issues.append(QualityIssue(

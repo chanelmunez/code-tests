@@ -111,7 +111,7 @@ class ReconciliationResult:
             "changed": len(self.changed),
             "unchanged": len(self.unchanged),
             "quality_issues": len(self.quality_issues),
-            "skipped_due_to_duplicates": len(self.skipped_skus),
+            "skipped_due_to_errors": len(self.skipped_skus),
         }
 
     @property

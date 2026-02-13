@@ -100,6 +100,32 @@ class TestFindNullFields:
         name_issues = [i for i in issues if i.field == "name"]
         assert len(name_issues) == 1
 
+    def test_detects_null_date(self):
+        df = pd.DataFrame({
+            "sku": ["SKU-001"],
+            "name": ["Widget"],
+            "quantity": [100],
+            "location": ["WA"],
+            "date": [None],
+        })
+        issues = find_null_fields(df, "test")
+        date_issues = [i for i in issues if i.field == "date"]
+        assert len(date_issues) == 1
+        assert date_issues[0].severity == "error"
+
+    def test_detects_empty_location(self):
+        df = pd.DataFrame({
+            "sku": ["SKU-001"],
+            "name": ["Widget"],
+            "quantity": [100],
+            "location": [""],
+            "date": ["2024-01-01"],
+        })
+        issues = find_null_fields(df, "test")
+        loc_issues = [i for i in issues if i.field == "location"]
+        assert len(loc_issues) == 1
+        assert loc_issues[0].severity == "error"
+
 
 class TestGetDuplicateSkus:
     """Tests for the duplicate SKU set extractor."""

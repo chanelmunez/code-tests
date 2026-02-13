@@ -14,7 +14,11 @@ def reconcile(
     """Reconcile two normalized inventory snapshots.
 
     Matches items by SKU and classifies each as added, removed, changed, or unchanged.
-    Duplicate SKUs (in either snapshot) are excluded from reconciliation and reported.
+
+    SKUs are excluded from reconciliation when:
+    - They appear more than once in either snapshot (duplicate).
+    - They are associated with any error-level quality issue (e.g., negative
+      quantity, missing required field, fractional quantity, unparseable date).
 
     Args:
         df1: Normalized snapshot_1 DataFrame.
@@ -26,14 +30,18 @@ def reconcile(
     """
     quality_issues = list(quality_issues) if quality_issues else []
 
-    # Identify and exclude duplicate SKUs from both snapshots
+    # Identify SKUs to exclude: duplicates + any with error-level issues
     dupes_1 = get_duplicate_skus(df1)
     dupes_2 = get_duplicate_skus(df2)
-    all_dupes = dupes_1 | dupes_2
+    error_skus = {
+        issue.sku for issue in quality_issues
+        if issue.severity == "error"
+    }
+    skipped = dupes_1 | dupes_2 | error_skus
 
-    if all_dupes:
-        df1 = df1[~df1["sku"].isin(all_dupes)].copy()
-        df2 = df2[~df2["sku"].isin(all_dupes)].copy()
+    if skipped:
+        df1 = df1[~df1["sku"].isin(skipped)].copy()
+        df2 = df2[~df2["sku"].isin(skipped)].copy()
 
     skus_1 = set(df1["sku"])
     skus_2 = set(df2["sku"])
@@ -118,5 +126,5 @@ def reconcile(
         changed=changed,
         unchanged=unchanged,
         quality_issues=quality_issues,
-        skipped_skus=sorted(all_dupes),
+        skipped_skus=sorted(skipped),
     )

@@ -185,6 +185,77 @@ class TestReconcileDuplicateHandling:
         assert result.skipped_skus == ["SKU-001", "SKU-003"]
 
 
+class TestReconcileErrorSeverityExclusion:
+    """Tests for error-level quality issue exclusion."""
+
+    def test_excludes_skus_with_negative_quantity_error(self):
+        """SKUs flagged with error-level issues should be excluded from reconciliation."""
+        from reconciliation.models import QualityIssue
+        df1 = pd.DataFrame({
+            "sku": ["SKU-001", "SKU-002"],
+            "name": ["A", "B"],
+            "quantity": [100, 50],
+            "location": ["WA", "WA"],
+            "date": ["2024-01-08", "2024-01-08"],
+        })
+        df2 = pd.DataFrame({
+            "sku": ["SKU-001", "SKU-002"],
+            "name": ["A", "B"],
+            "quantity": [90, -5],
+            "location": ["WA", "WA"],
+            "date": ["2024-01-15", "2024-01-15"],
+        })
+        issues = [QualityIssue(
+            sku="SKU-002", field="quantity", issue_type="negative_quantity",
+            detail="Negative quantity: -5", snapshot="snapshot_2", severity="error",
+        )]
+        result = reconcile(df1, df2, quality_issues=issues)
+        all_skus = {item.sku for item in result.all_items}
+        assert "SKU-002" not in all_skus
+        assert "SKU-002" in result.skipped_skus
+        assert len(result.changed) == 1
+        assert result.changed[0].sku == "SKU-001"
+
+    def test_warning_level_issues_do_not_cause_exclusion(self):
+        """Warning-level issues should NOT cause SKU exclusion."""
+        from reconciliation.models import QualityIssue
+        df1 = pd.DataFrame({
+            "sku": ["SKU-001"],
+            "name": ["A"],
+            "quantity": [100],
+            "location": ["WA"],
+            "date": ["2024-01-08"],
+        })
+        df2 = df1.copy()
+        df2["quantity"] = [90]
+        issues = [QualityIssue(
+            sku="SKU-001", field="quantity", issue_type="float_quantity",
+            detail="Stored as float", snapshot="snapshot_2", severity="warning",
+        )]
+        result = reconcile(df1, df2, quality_issues=issues)
+        assert len(result.changed) == 1
+
+    def test_normalization_collision_creates_duplicate(self):
+        """SKU-005 and SKU005 both normalizing to SKU-005 should be treated as duplicate."""
+        df1 = pd.DataFrame({
+            "sku": ["SKU-005", "SKU-005"],
+            "name": ["Cable 6ft", "Cable 6ft Alt"],
+            "quantity": [100, 50],
+            "location": ["WA", "WB"],
+            "date": ["2024-01-08", "2024-01-08"],
+        })
+        df2 = pd.DataFrame({
+            "sku": ["SKU-005"],
+            "name": ["Cable 6ft"],
+            "quantity": [90],
+            "location": ["WA"],
+            "date": ["2024-01-15"],
+        })
+        result = reconcile(df1, df2)
+        assert "SKU-005" in result.skipped_skus
+        assert len(result.all_items) == 0
+
+
 class TestReconcileEdgeCases:
     """Tests for edge cases."""
 

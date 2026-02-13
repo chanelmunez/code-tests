@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generated_at": "2026-02-13T16:39:54.196306",
+    "generated_at": "2026-02-13T16:58:41.398974",
     "snapshot_1": "data/snapshot_1.csv",
     "snapshot_2": "data/snapshot_2.csv"
   },
@@ -12,7 +12,7 @@
     "changed": 70,
     "unchanged": 2,
     "quality_issues": 13,
-    "skipped_due_to_duplicates": 1
+    "skipped_due_to_errors": 1
   },
   "reconciliation": {
     "added": [

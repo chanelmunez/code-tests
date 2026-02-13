@@ -4,14 +4,20 @@
 
 I built a modular pipeline that processes the snapshots in four stages: **load → normalize → validate → reconcile**. Each stage is a separate module with its own unit tests, making the logic easy to verify and extend.
 
-The loader standardizes the different column names between files (`name`/`product_name`, `quantity`/`qty`, etc.) into a common schema. The normalizer then cleans the raw data — fixing SKU formats, stripping whitespace, converting float quantities to integers, and normalizing date formats — while logging every correction as a quality issue. The validator runs semantic checks (duplicates, negative quantities, missing values). Finally, the reconciler joins the two clean datasets on SKU to classify each item as added, removed, changed, or unchanged.
+The loader standardizes the different column names between files (`name`/`product_name`, `quantity`/`qty`, etc.) into a common schema. The normalizer then cleans the raw data — fixing SKU formats, stripping whitespace, converting float quantities to integers, and normalizing date formats — while logging every correction as a quality issue. The validator runs semantic checks (duplicates, negative quantities, missing values across all fields). Finally, the reconciler joins the two clean datasets on SKU to classify each item as added, removed, changed, or unchanged.
 
 ## Key Decisions
 
-- **Duplicate SKU handling**: SKU-045 appears twice in snapshot_2 with conflicting data (different names, quantities, and locations). Rather than guess which row is correct, I excluded it from reconciliation entirely and flagged it prominently in the quality issues report. This avoids silently propagating bad data.
-- **SKU normalization**: SKUs like `SKU005`, `sku-008`, and `SKU018` are normalized to `SKU-NNN` format (uppercase, hyphenated, zero-padded). Without this, these items would incorrectly appear as "removed" from one snapshot and "added" to the other.
+- **Error severity enforcement**: Any SKU associated with an error-level quality issue (duplicate, negative quantity, fractional quantity, unparseable date, missing field) is excluded from reconciliation entirely. This prevents bad data from contaminating the output. Warnings (whitespace, float-stored integers, non-standard dates) are auto-corrected and the item proceeds normally.
+- **Duplicate SKU handling**: SKU-045 appears twice in snapshot_2 with conflicting data (different names, quantities, and locations). Rather than guess which row is correct, I excluded it from reconciliation entirely and flagged it prominently in the quality issues report.
+- **Fractional quantities rejected**: A value like `70.5` is treated as an error (inventory counts should be whole numbers), while `70.0` is safely converted to `70` with a warning. This prevents silent precision loss from `int(float(...))` truncation.
+- **SKU normalization**: SKUs like `SKU005`, `sku-008`, and `SKU018` are normalized to `SKU-NNN` format (uppercase, hyphenated, zero-padded). Without this, these items would incorrectly appear as "removed" from one snapshot and "added" to the other. A side-effect is that `SKU005` and `SKU-005` in the same file become a duplicate after normalization — this is by design and is flagged.
 - **Change tracking scope**: Beyond quantity deltas, the tool also detects product name changes and warehouse/location changes, since these could indicate data entry errors or legitimate transfers.
-- **All data read as strings**: CSVs are loaded with `dtype=str` to prevent pandas from silently coercing types (e.g., treating `SKU005` as a valid string while parsing `70.0` as float). Conversion happens explicitly in the normalizer.
+- **All data read as strings**: CSVs are loaded with `dtype=str` to prevent pandas from silently coercing types. Conversion happens explicitly in the normalizer.
+
+## Known Limitations
+
+- **Single SKU per location**: The system uses SKU as the sole primary key. If the same SKU legitimately exists in multiple warehouses within a single snapshot, it is flagged as a duplicate and excluded. A real-world extension would use (SKU, location) as a composite key.
 
 ## Data Quality Issues Found
 

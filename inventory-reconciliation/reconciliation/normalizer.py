@@ -1,5 +1,6 @@
 """Normalize raw inventory data — SKUs, quantities, dates, and whitespace."""
 
+import math
 import re
 from datetime import datetime
 
@@ -10,12 +11,17 @@ from .models import QualityIssue
 SKU_PATTERN = re.compile(r"^SKU-?(\d+)$", re.IGNORECASE)
 
 
-def normalize_sku(raw: str) -> str:
+def normalize_sku(raw) -> str:
     """Normalize a SKU to the canonical format SKU-NNN.
 
-    Handles: missing hyphens (SKU005), lowercase (sku-008), extra whitespace.
+    Handles: missing hyphens (SKU005), lowercase (sku-008), extra whitespace,
+    and None/NaN values (returns empty string).
     """
-    cleaned = raw.strip()
+    if raw is None or (isinstance(raw, float) and math.isnan(raw)):
+        return ""
+    cleaned = str(raw).strip()
+    if not cleaned:
+        return ""
     match = SKU_PATTERN.match(cleaned)
     if match:
         digits = match.group(1).zfill(3)
@@ -27,26 +33,36 @@ def normalize_sku(raw: str) -> str:
 def normalize_quantity(raw: str) -> int | None:
     """Convert a quantity string to an integer.
 
-    Handles float-like strings (e.g., "70.0", "80.00") by truncating to int.
+    Converts integer-valued floats (e.g., "70.0") to int.
+    Rejects genuine fractional values (e.g., "70.5") — returns None.
     Returns None if the value cannot be parsed.
     """
     try:
-        return int(float(raw.strip()))
+        val = float(str(raw).strip())
+        int_val = int(val)
+        if val != int_val:
+            return None  # Genuine fraction — reject
+        return int_val
     except (ValueError, TypeError, AttributeError):
         return None
 
 
-def normalize_date(raw: str) -> str | None:
+def normalize_date(raw) -> str | None:
     """Normalize a date string to ISO format (YYYY-MM-DD).
 
     Handles:
         - ISO format: 2024-01-15
         - US format: 01/15/2024
+        - None/NaN: returns None
     """
-    raw = raw.strip()
+    if raw is None or (isinstance(raw, float) and math.isnan(raw)):
+        return None
+    raw_str = str(raw).strip()
+    if not raw_str:
+        return None
     for fmt in ("%Y-%m-%d", "%m/%d/%Y"):
         try:
-            return datetime.strptime(raw, fmt).strftime("%Y-%m-%d")
+            return datetime.strptime(raw_str, fmt).strftime("%Y-%m-%d")
         except ValueError:
             continue
     return None
@@ -70,7 +86,7 @@ def normalize_dataframe(
     # --- SKU normalization ---
     raw_skus = df["sku"].copy()
     df["sku"] = df["sku"].apply(normalize_sku)
-    for idx, (raw, normalized) in enumerate(zip(raw_skus, df["sku"])):
+    for raw, normalized in zip(raw_skus, df["sku"]):
         if raw != normalized:
             issues.append(QualityIssue(
                 sku=normalized,
@@ -78,14 +94,14 @@ def normalize_dataframe(
                 issue_type="sku_format",
                 detail=f"SKU format inconsistency: '{raw}' normalized to '{normalized}'",
                 snapshot=snapshot_label,
-                original_value=raw,
+                original_value=str(raw),
                 corrected_value=normalized,
             ))
 
     # --- Name normalization (strip whitespace) ---
     raw_names = df["name"].copy()
     df["name"] = df["name"].str.strip()
-    for idx, (sku, raw, cleaned) in enumerate(zip(df["sku"], raw_names, df["name"])):
+    for sku, raw, cleaned in zip(df["sku"], raw_names, df["name"]):
         if raw != cleaned:
             issues.append(QualityIssue(
                 sku=sku,
@@ -93,16 +109,41 @@ def normalize_dataframe(
                 issue_type="whitespace",
                 detail=f"Whitespace in product name: '{raw}' → '{cleaned}'",
                 snapshot=snapshot_label,
-                original_value=raw,
-                corrected_value=cleaned,
+                original_value=str(raw),
+                corrected_value=str(cleaned),
             ))
 
     # --- Quantity normalization ---
     raw_quantities = df["quantity"].copy()
     df["quantity"] = df["quantity"].apply(normalize_quantity)
-    for idx, (sku, raw, normalized) in enumerate(zip(df["sku"], raw_quantities, df["quantity"])):
+    for sku, raw, normalized in zip(df["sku"], raw_quantities, df["quantity"]):
         raw_str = str(raw).strip()
-        if normalized is not None and "." in raw_str:
+        if normalized is None and raw_str:
+            # Determine whether it's a fraction or completely unparseable
+            try:
+                float_val = float(raw_str)
+                if float_val != int(float_val):
+                    issues.append(QualityIssue(
+                        sku=sku,
+                        field="quantity",
+                        issue_type="fractional_quantity",
+                        detail=f"Fractional quantity not allowed: '{raw_str}'",
+                        snapshot=snapshot_label,
+                        original_value=raw_str,
+                        severity="error",
+                    ))
+            except (ValueError, TypeError):
+                issues.append(QualityIssue(
+                    sku=sku,
+                    field="quantity",
+                    issue_type="invalid_quantity",
+                    detail=f"Cannot parse quantity: '{raw_str}'",
+                    snapshot=snapshot_label,
+                    original_value=raw_str,
+                    severity="error",
+                ))
+        elif normalized is not None and "." in raw_str:
+            # Integer stored as float (70.0 → 70) — cosmetic, not an error
             issues.append(QualityIssue(
                 sku=sku,
                 field="quantity",
@@ -119,9 +160,19 @@ def normalize_dataframe(
     # --- Date normalization ---
     raw_dates = df["date"].copy()
     df["date"] = df["date"].apply(normalize_date)
-    for idx, (sku, raw, normalized) in enumerate(zip(df["sku"], raw_dates, df["date"])):
+    for sku, raw, normalized in zip(df["sku"], raw_dates, df["date"]):
         raw_str = str(raw).strip()
-        if normalized and raw_str != normalized:
+        if normalized is None and raw_str:
+            issues.append(QualityIssue(
+                sku=sku,
+                field="date",
+                issue_type="invalid_date",
+                detail=f"Cannot parse date: '{raw_str}'",
+                snapshot=snapshot_label,
+                original_value=raw_str,
+                severity="error",
+            ))
+        elif normalized and raw_str != normalized:
             issues.append(QualityIssue(
                 sku=sku,
                 field="date",

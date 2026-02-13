@@ -34,20 +34,24 @@ reconciliation/
 └── reporter.py           # JSON + CSV report generation
 tests/
 ├── conftest.py           # Shared pytest fixtures
+├── test_loader.py
 ├── test_normalizer.py
 ├── test_validator.py
 ├── test_reconciler.py
 ├── test_reporter.py
-└── test_integration.py
+├── test_integration.py
+└── test_cli.py           # CLI end-to-end tests (added in phase 2)
 ```
 
 ## Pipeline Flow
 
 ```
 Load CSVs → Normalize columns → Clean data → Validate → Reconcile → Report
+                                                              ↓
+                                              Error-level SKUs excluded
 ```
 
-## Implementation Progress
+## Phase 1: Implementation
 
 - [x] Project scaffolding
 - [x] Data models (models.py)
@@ -62,27 +66,34 @@ Load CSVs → Normalize columns → Clean data → Validate → Reconcile → Re
 - [x] NOTES.md
 - [x] Git commits
 
-## QA & Hardening
+## Phase 2: Hardening (from ADVICE.md, TESTING.md, CODE-TESTING-PROGRESS.md)
 
-- [x] Edge case analysis
-- [x] Hardening test suite (`tests/test_hardening.py`)
-- [x] Bug fix: Deterministic column loading
-- [ ] CLI End-to-End Verification
-- [ ] Final Report Review
+- [x] Guard `normalize_sku` and `normalize_date` against None/NaN inputs
+- [x] Reject fractional quantities (70.5 → error) vs. integer-as-float (70.0 → warning)
+- [x] Emit error-level issue for unparseable dates
+- [x] Extend validator to check all 5 required fields (added date, location)
+- [x] Enforce severity: exclude error-level SKUs from reconciliation output
+- [x] Fix column order determinism (set → fixed list)
+- [x] Remove unused `sys` import and `enumerate` idx variables
+- [x] Add missing assertion in `test_total_items_reconciled`
+- [x] Add CLI end-to-end tests (6 tests via subprocess)
+- [x] Add normalization collision edge case tests
+- [x] Update NOTES.md with severity enforcement + SKU-per-location limitation
 
 ## Test Results
 
 ```
-105 passed in 0.19s
+130 passed in 2.28s
 ```
 
 **Test breakdown:**
 - `test_loader.py` — 8 tests (CSV loading, column mapping, error handling)
-- `test_normalizer.py` — 19 tests (SKU/quantity/date normalization, DataFrame cleaning)
-- `test_validator.py` — 11 tests (duplicates, negatives, nulls)
-- `test_reconciler.py` — 16 tests (add/remove/change/unchanged, duplicates, edge cases)
+- `test_normalizer.py` — 30 tests (SKU/quantity/date normalization, None/NaN guards, fractional rejection)
+- `test_validator.py` — 13 tests (duplicates, negatives, nulls across all fields)
+- `test_reconciler.py` — 19 tests (add/remove/change, duplicates, error exclusion, collisions)
 - `test_reporter.py` — 15 tests (JSON structure, CSV format, file creation)
 - `test_integration.py` — 16 tests (full pipeline with real data)
+- `test_cli.py` — 6 tests (subprocess CLI, argument parsing, output files)
 
 ## Reconciliation Results
 
@@ -94,5 +105,5 @@ Load CSVs → Normalize columns → Clean data → Validate → Reconcile → Re
 | Removed (only in snapshot 1) | 2 |
 | Changed | 70 |
 | Unchanged | 2 |
-| Skipped (duplicate SKU-045) | 1 |
+| Skipped (data quality errors) | 1 |
 | Data quality issues | 13 |
