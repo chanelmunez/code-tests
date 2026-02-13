@@ -49,8 +49,13 @@ _Follow-up review: Fri Feb 13 17:05 CST 2026_
 
 _Test run: 139 passed in 2.13s (pytest)._ 
 
----
 
+_Follow-up review: Fri Feb 13 17:31 CST 2026_
+
+## Documentation & hygiene
+- **Docs lagged reality, now partially updated** – README/NOTES/PROGRESS/TESTING were refreshed to reflect the current pipeline (172 tests, CLI flags, known limitations). Verify during code review that no critical instructions regressed, and add the outstanding policy decisions (e.g., severity handling) once finalized so the docs stay the source of truth.
+- **Generated artefacts still tracked** – Running `pytest` or `python reconcile.py` writes to `output/` and `.coverage`, which remain unignored. Add `.gitignore` entries or default to temp dirs in tests to keep the working tree clean for future reviewers.
+- **Severity decision outstanding** – Even with the doc updates, the code still emits reports with error-level issues while returning `0`. Adopt and document the desired behavior (abort or continue) and update CLI messaging/tests accordingly.
 _Follow-up review: Fri Feb 13 17:17 CST 2026 (industry research)_
 
 ## External practices worth adopting

@@ -1,54 +1,51 @@
-# QA Assessment
+# Testing & QA Status
 
-## Phase 1: Code Inspection & Hardening (Completed)
+_Last updated: 2026-02-13_
 
-**Status**: Complete
-**Date**: 2026-02-13
-**Outcome**: 114 Tests Passed (97% Coverage)
+## Overview
 
-### Key Actions Taken
-1.  **Static Analysis**: Reviewed codebase structure and logic.
-2.  **Boundary Testing**: Created `tests/test_hardening.py` to cover:
-    - Empty files (0-byte vs header-only)
-    - Binary garbage injection
-    - SKU collisions (normalization leading to duplicates)
-    - Extreme integer values
-3.  **Bug Fixes**: 
-    - Fixed non-deterministic column ordering in `loader.py`.
-4.  **Documentation**: Created `CODE-TESTING-PROGRESS.md` with detailed coverage metrics.
+The project ships with a pytest suite that exercises the entire pipeline—from CSV ingestion through reporting—plus CLI subprocess tests and regression suites distilled from ongoing reviews.
 
-## Phase 2: End-to-End CLI Verification (Completed)
+```
+pytest  # 172 passed in ~3.3s on Python 3.12
+```
 
-**Status**: Complete
-**Outcome**: All CLI tests passed.
+## Coverage Highlights
 
-### Key Actions
-1.  **CLI Usability**: Verified friendly error messages and proper output file creation.
-2.  **Report Integrity**: Confirmed JSON and CSV outputs are generated correctly.
-3.  **Performance Check**: Confirmed robust handling of large files.
+| Area | Files / Tests |
+|------|---------------|
+| Loaders & Normalizers | `tests/test_loader.py`, `tests/test_normalizer.py` |
+| Validators & Reconcilers | `tests/test_validator.py`, `tests/test_reconciler.py` |
+| Reporters | `tests/test_reporter.py` |
+| CLI / End-to-End | `tests/test_cli.py`, `tests/test_integration.py` |
+| Hardening / Edge Cases | `tests/test_hardening.py`, `tests/test_new_edge_cases.py` |
+| Advice Regression Suites | `tests/test_advice_coverage.py`, `tests/test_quality_gaps.py` |
 
-## Phase 2b: Advanced Normalization (Completed)
+## Recent Additions
 
-**Status**: Complete
-**Outcome**: 143 Tests Passed (98% Coverage)
+- **Regression cases** (2026-02-13): Added `tests/test_quality_gaps.py` to lock in behavior around blank SKUs, invalid quantities/dates, and duplicate-SKU reporting.
+- **Integration assertion**: `tests/test_integration.py` now verifies `summary['total_snapshot_2']` matches the number of reconciled SKUs.
+- **CLI logging coverage**: `tests/test_cli.py` checks both text and JSON log formats and validates the `pipeline_log` embedded in the JSON output.
 
-### Key Actions
-1.  **Unicode Normalization**: Implemented `NFKC` normalization to handle equivalent but bytewise-different characters (e.g., accents).
-2.  **Location Standardization**: Added casing normalization (Title Case) to `location` field to prevent false positives.
-3.  **New Tests**: Added `tests/test_new_edge_cases.py` verifying these scenarios.
+## Known Gaps
 
-## Phase 3: Advice & Feedback Implementation (Completed)
+| Gap | Impact | Planned Action |
+|-----|--------|----------------|
+| CLI continues with return code 0 even when error-level issues occur | Operators may miss critical data-quality failures | Decide on fail-fast policy; add CLI test enforcing chosen behavior |
+| Generated artefacts remain in repo after tests (`output/`, `.coverage`) | Dirty working tree post-`pytest` | Update tests to use temp dirs and extend `.gitignore` |
+| Multi-warehouse / ABC cycle-count strategies untested | Limits confidence for future feature work | Add design + tests once feature work begins |
 
-**Status**: Complete
-**Outcome**: 149 Tests Passed (98% Coverage)
+## How to Run
 
-### Key Actions
-1.  **Loader Robustness**: Updated `loader.py` to read empty cells as empty strings (`""`) instead of `NaN`, preventing downstream type errors.
-2.  **Severity Enforcement**: Verified that *any* error-level issue (not just duplicates) causes an SKU to be excluded from reconciliation.
-3.  **Crash Guards**: Verified `normalize_*` functions handle `None`/`NaN` gracefully.
-4.  **New Tests**: Added `tests/test_advice_coverage.py` to explicitly verify these fixes.
+1. Install dependencies via `pip install -r requirements.txt` (use a virtualenv).
+2. From repo root, run `pytest` to execute the full suite.
+3. Use `pytest -k <pattern>` for focused runs (e.g., `pytest -k cli`).
+4. CLI-specific smoke test: `python reconcile.py --output-dir tmp/out` (ensures reports are generated end-to-end).
 
-## Next Steps
+## Tooling
 
-- Final code cleanup (remove temporary test data).
-- Update README with usage instructions.
+- **pytest** with builtin fixtures plus `tmp_path` for isolated CLI runs.
+- **pandas** for creating in-memory DataFrames during normalization/validation tests.
+- **subprocess** module in tests to run `reconcile.py` the way a user would.
+
+Maintain this document as the authoritative source for QA scope, recent changes, and remaining test gaps.

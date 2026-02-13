@@ -31,3 +31,10 @@ The loader standardizes the different column names between files (`name`/`produc
 | Error | Negative quantity | 1 | SKU-045 has qty `-5` |
 
 Additionally, the two snapshots use completely different column naming conventions, which the loader handles transparently.
+
+## Known Limitations / Next Steps
+
+- **Severity handling**: The CLI currently finishes successfully even when error-level quality issues are detected. We need a policy decision (fail fast vs. continue with warnings) and matching implementation/tests.
+- **Date/location validation**: `find_null_fields` only covers `sku`, `name`, and `quantity`. Extend validation so empty dates/locations are surfaced before reconciliation.
+- **Generated artefacts**: Running the CLI writes to `output/` and leaves those files tracked unless the user overrides `--output-dir`. Consider ignoring output artefacts or defaulting to a temp directory for tests.
+- **Master data enrichment**: The data model assumes SKUs are self-contained. Looking up canonical metadata (UoM, pack sizes, preferred warehouse) would let us detect more subtle discrepancies such as unit-mismatch changes.
