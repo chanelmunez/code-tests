@@ -121,6 +121,11 @@ class TestFullPipeline:
         # 79 rows in snap2 (80 SKUs minus SKU-025/026, plus duplicate SKU-045 row).
         # 78 unique SKUs, minus 1 skipped (SKU-045) = 77 reconciled.
         assert summary["total_snapshot_2"] == 77
+        assert summary["total_snapshot_2"] == (
+            len(full_reconciliation.added)
+            + len(full_reconciliation.changed)
+            + len(full_reconciliation.unchanged)
+        )
 
     def test_no_items_appear_in_multiple_categories(self, full_reconciliation):
         added = {i.sku for i in full_reconciliation.added}
