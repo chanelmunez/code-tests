@@ -1,0 +1,780 @@
+{
+  "metadata": {
+    "generated_at": "2026-02-13T16:39:54.196306",
+    "snapshot_1": "data/snapshot_1.csv",
+    "snapshot_2": "data/snapshot_2.csv"
+  },
+  "summary": {
+    "total_snapshot_1": 74,
+    "total_snapshot_2": 77,
+    "added": 5,
+    "removed": 2,
+    "changed": 70,
+    "unchanged": 2,
+    "quality_issues": 13,
+    "skipped_due_to_duplicates": 1
+  },
+  "reconciliation": {
+    "added": [
+      {
+        "sku": "SKU-076",
+        "status": "added",
+        "name": "Stream Deck Mini",
+        "quantity": 15
+      },
+      {
+        "sku": "SKU-077",
+        "status": "added",
+        "name": "Stream Deck XL",
+        "quantity": 8
+      },
+      {
+        "sku": "SKU-078",
+        "status": "added",
+        "name": "Capture Card",
+        "quantity": 12
+      },
+      {
+        "sku": "SKU-079",
+        "status": "added",
+        "name": "USB-C Hub",
+        "quantity": 45
+      },
+      {
+        "sku": "SKU-080",
+        "status": "added",
+        "name": "Thunderbolt Cable",
+        "quantity": 30
+      }
+    ],
+    "removed": [
+      {
+        "sku": "SKU-025",
+        "status": "removed",
+        "name": "VGA Cable",
+        "last_quantity": 50
+      },
+      {
+        "sku": "SKU-026",
+        "status": "removed",
+        "name": "DVI Cable",
+        "last_quantity": 35
+      }
+    ],
+    "changed": [
+      {
+        "sku": "SKU-001",
+        "status": "changed",
+        "name": "Widget A",
+        "old_quantity": 150,
+        "new_quantity": 145,
+        "quantity_delta": -5
+      },
+      {
+        "sku": "SKU-002",
+        "status": "changed",
+        "name": "Widget B",
+        "old_quantity": 75,
+        "new_quantity": 70,
+        "quantity_delta": -5
+      },
+      {
+        "sku": "SKU-003",
+        "status": "changed",
+        "name": "Gadget Pro",
+        "old_quantity": 200,
+        "new_quantity": 185,
+        "quantity_delta": -15
+      },
+      {
+        "sku": "SKU-004",
+        "status": "changed",
+        "name": "Gadget Lite",
+        "old_quantity": 50,
+        "new_quantity": 48,
+        "quantity_delta": -2
+      },
+      {
+        "sku": "SKU-005",
+        "status": "changed",
+        "name": "Connector Cable 6ft",
+        "old_quantity": 500,
+        "new_quantity": 480,
+        "quantity_delta": -20
+      },
+      {
+        "sku": "SKU-008",
+        "status": "changed",
+        "name": "Power Supply Unit Pro",
+        "old_quantity": 45,
+        "new_quantity": 42,
+        "quantity_delta": -3
+      },
+      {
+        "sku": "SKU-009",
+        "status": "changed",
+        "name": "Mounting Bracket Small",
+        "old_quantity": 1000,
+        "new_quantity": 975,
+        "quantity_delta": -25
+      },
+      {
+        "sku": "SKU-010",
+        "status": "changed",
+        "name": "Mounting Bracket Large",
+        "old_quantity": 750,
+        "new_quantity": 720,
+        "quantity_delta": -30
+      },
+      {
+        "sku": "SKU-011",
+        "status": "changed",
+        "name": "LED Panel 12x12",
+        "old_quantity": 120,
+        "new_quantity": 115,
+        "quantity_delta": -5
+      },
+      {
+        "sku": "SKU-012",
+        "status": "changed",
+        "name": "LED Panel 24x24",
+        "old_quantity": 90,
+        "new_quantity": 85,
+        "quantity_delta": -5
+      },
+      {
+        "sku": "SKU-013",
+        "status": "changed",
+        "name": "Thermal Paste Tube",
+        "old_quantity": 2000,
+        "new_quantity": 1850,
+        "quantity_delta": -150
+      },
+      {
+        "sku": "SKU-014",
+        "status": "changed",
+        "name": "Cooling Fan 80mm",
+        "old_quantity": 300,
+        "new_quantity": 290,
+        "quantity_delta": -10
+      },
+      {
+        "sku": "SKU-015",
+        "status": "changed",
+        "name": "Cooling Fan 120mm",
+        "old_quantity": 250,
+        "new_quantity": 245,
+        "quantity_delta": -5
+      },
+      {
+        "sku": "SKU-016",
+        "status": "changed",
+        "name": "USB Hub 4-Port",
+        "old_quantity": 180,
+        "new_quantity": 165,
+        "quantity_delta": -15
+      },
+      {
+        "sku": "SKU-017",
+        "status": "changed",
+        "name": "USB Hub 7-Port",
+        "old_quantity": 95,
+        "new_quantity": 88,
+        "quantity_delta": -7
+      },
+      {
+        "sku": "SKU-018",
+        "status": "changed",
+        "name": "Ethernet Cable Cat5",
+        "old_quantity": 800,
+        "new_quantity": 750,
+        "quantity_delta": -50
+      },
+      {
+        "sku": "SKU-019",
+        "status": "changed",
+        "name": "Ethernet Cable Cat6",
+        "old_quantity": 600,
+        "new_quantity": 580,
+        "quantity_delta": -20
+      },
+      {
+        "sku": "SKU-020",
+        "status": "changed",
+        "name": "Ethernet Cable Cat6a",
+        "old_quantity": 400,
+        "new_quantity": 390,
+        "quantity_delta": -10
+      },
+      {
+        "sku": "SKU-021",
+        "status": "changed",
+        "name": "HDMI Cable 3ft",
+        "old_quantity": 450,
+        "new_quantity": 425,
+        "quantity_delta": -25
+      },
+      {
+        "sku": "SKU-022",
+        "status": "changed",
+        "name": "HDMI Cable 6ft",
+        "old_quantity": 380,
+        "new_quantity": 365,
+        "quantity_delta": -15
+      },
+      {
+        "sku": "SKU-023",
+        "status": "changed",
+        "name": "HDMI Cable 10ft",
+        "old_quantity": 220,
+        "new_quantity": 210,
+        "quantity_delta": -10
+      },
+      {
+        "sku": "SKU-024",
+        "status": "changed",
+        "name": "DisplayPort Cable",
+        "old_quantity": 175,
+        "new_quantity": 170,
+        "quantity_delta": -5
+      },
+      {
+        "sku": "SKU-027",
+        "status": "changed",
+        "name": "Audio Cable 3.5mm",
+        "old_quantity": 600,
+        "new_quantity": 575,
+        "quantity_delta": -25
+      },
+      {
+        "sku": "SKU-028",
+        "status": "changed",
+        "name": "Audio Cable RCA",
+        "old_quantity": 400,
+        "new_quantity": 385,
+        "quantity_delta": -15
+      },
+      {
+        "sku": "SKU-029",
+        "status": "changed",
+        "name": "Optical Audio Cable",
+        "old_quantity": 150,
+        "new_quantity": 145,
+        "quantity_delta": -5
+      },
+      {
+        "sku": "SKU-030",
+        "status": "changed",
+        "name": "Surge Protector 6-Outlet",
+        "old_quantity": 200,
+        "new_quantity": 188,
+        "quantity_delta": -12
+      },
+      {
+        "sku": "SKU-031",
+        "status": "changed",
+        "name": "Surge Protector 12-Outlet",
+        "old_quantity": 120,
+        "new_quantity": 112,
+        "quantity_delta": -8
+      },
+      {
+        "sku": "SKU-032",
+        "status": "changed",
+        "name": "Extension Cord 10ft",
+        "old_quantity": 300,
+        "new_quantity": 285,
+        "quantity_delta": -15
+      },
+      {
+        "sku": "SKU-033",
+        "status": "changed",
+        "name": "Extension Cord 25ft",
+        "old_quantity": 180,
+        "new_quantity": 172,
+        "quantity_delta": -8
+      },
+      {
+        "sku": "SKU-034",
+        "status": "changed",
+        "name": "Power Strip",
+        "old_quantity": 250,
+        "new_quantity": 240,
+        "quantity_delta": -10
+      },
+      {
+        "sku": "SKU-035",
+        "status": "changed",
+        "name": "Cable Ties 100pk",
+        "old_quantity": 1500,
+        "new_quantity": 1420,
+        "quantity_delta": -80
+      },
+      {
+        "sku": "SKU-036",
+        "status": "changed",
+        "name": "Cable Ties 500pk",
+        "old_quantity": 400,
+        "new_quantity": 385,
+        "quantity_delta": -15
+      },
+      {
+        "sku": "SKU-037",
+        "status": "changed",
+        "name": "Velcro Straps 50pk",
+        "old_quantity": 800,
+        "new_quantity": 765,
+        "quantity_delta": -35
+      },
+      {
+        "sku": "SKU-038",
+        "status": "changed",
+        "name": "Label Maker",
+        "old_quantity": 25,
+        "new_quantity": 22,
+        "quantity_delta": -3
+      },
+      {
+        "sku": "SKU-039",
+        "status": "changed",
+        "name": "Label Tape",
+        "old_quantity": 200,
+        "new_quantity": 185,
+        "quantity_delta": -15
+      },
+      {
+        "sku": "SKU-040",
+        "status": "changed",
+        "name": "Screwdriver Set",
+        "old_quantity": 150,
+        "new_quantity": 142,
+        "quantity_delta": -8
+      },
+      {
+        "sku": "SKU-041",
+        "status": "changed",
+        "name": "Precision Screwdriver Set",
+        "old_quantity": 100,
+        "new_quantity": 95,
+        "quantity_delta": -5
+      },
+      {
+        "sku": "SKU-042",
+        "status": "changed",
+        "name": "Wire Stripper",
+        "old_quantity": 75,
+        "new_quantity": 70,
+        "quantity_delta": -5
+      },
+      {
+        "sku": "SKU-043",
+        "status": "changed",
+        "name": "Crimping Tool",
+        "old_quantity": 60,
+        "new_quantity": 58,
+        "quantity_delta": -2
+      },
+      {
+        "sku": "SKU-044",
+        "status": "changed",
+        "name": "Multimeter Basic",
+        "old_quantity": 40,
+        "new_quantity": 35,
+        "quantity_delta": -5
+      },
+      {
+        "sku": "SKU-046",
+        "status": "changed",
+        "name": "Soldering Iron",
+        "old_quantity": 35,
+        "new_quantity": 32,
+        "quantity_delta": -3
+      },
+      {
+        "sku": "SKU-047",
+        "status": "changed",
+        "name": "Solder Wire",
+        "old_quantity": 300,
+        "new_quantity": 280,
+        "quantity_delta": -20
+      },
+      {
+        "sku": "SKU-048",
+        "status": "changed",
+        "name": "Heat Shrink Tubing",
+        "old_quantity": 500,
+        "new_quantity": 475,
+        "quantity_delta": -25
+      },
+      {
+        "sku": "SKU-049",
+        "status": "changed",
+        "name": "Electrical Tape",
+        "old_quantity": 800,
+        "new_quantity": 760,
+        "quantity_delta": -40
+      },
+      {
+        "sku": "SKU-050",
+        "status": "changed",
+        "name": "Anti-Static Wrist Strap",
+        "old_quantity": 200,
+        "new_quantity": 190,
+        "quantity_delta": -10
+      },
+      {
+        "sku": "SKU-051",
+        "status": "changed",
+        "name": "Anti-Static Mat",
+        "old_quantity": 50,
+        "new_quantity": 48,
+        "quantity_delta": -2
+      },
+      {
+        "sku": "SKU-052",
+        "status": "changed",
+        "name": "Compressed Air Can",
+        "old_quantity": 400,
+        "new_quantity": 375,
+        "quantity_delta": -25
+      },
+      {
+        "sku": "SKU-053",
+        "status": "changed",
+        "name": "Isopropyl Alcohol 99%",
+        "old_quantity": 150,
+        "new_quantity": 140,
+        "quantity_delta": -10
+      },
+      {
+        "sku": "SKU-054",
+        "status": "changed",
+        "name": "Microfiber Cloth 10pk",
+        "old_quantity": 300,
+        "new_quantity": 285,
+        "quantity_delta": -15
+      },
+      {
+        "sku": "SKU-055",
+        "status": "changed",
+        "name": "Screen Cleaner",
+        "old_quantity": 250,
+        "new_quantity": 235,
+        "quantity_delta": -15
+      },
+      {
+        "sku": "SKU-056",
+        "status": "changed",
+        "name": "Keyboard Cleaner Gel",
+        "old_quantity": 180,
+        "new_quantity": 168,
+        "quantity_delta": -12
+      },
+      {
+        "sku": "SKU-057",
+        "status": "changed",
+        "name": "Monitor Stand",
+        "old_quantity": 45,
+        "new_quantity": 42,
+        "quantity_delta": -3
+      },
+      {
+        "sku": "SKU-058",
+        "status": "changed",
+        "name": "Laptop Stand",
+        "old_quantity": 60,
+        "new_quantity": 58,
+        "quantity_delta": -2
+      },
+      {
+        "sku": "SKU-059",
+        "status": "changed",
+        "name": "Tablet Stand",
+        "old_quantity": 80,
+        "new_quantity": 75,
+        "quantity_delta": -5
+      },
+      {
+        "sku": "SKU-060",
+        "status": "changed",
+        "name": "Phone Stand",
+        "old_quantity": 120,
+        "new_quantity": 115,
+        "quantity_delta": -5
+      },
+      {
+        "sku": "SKU-061",
+        "status": "changed",
+        "name": "Desk Organizer",
+        "old_quantity": 90,
+        "new_quantity": 85,
+        "quantity_delta": -5
+      },
+      {
+        "sku": "SKU-062",
+        "status": "changed",
+        "name": "Cable Management Box",
+        "old_quantity": 110,
+        "new_quantity": 105,
+        "quantity_delta": -5
+      },
+      {
+        "sku": "SKU-063",
+        "status": "changed",
+        "name": "Headphone Hook",
+        "old_quantity": 200,
+        "new_quantity": 192,
+        "quantity_delta": -8
+      },
+      {
+        "sku": "SKU-064",
+        "status": "changed",
+        "name": "Webcam Mount",
+        "old_quantity": 75,
+        "new_quantity": 72,
+        "quantity_delta": -3
+      },
+      {
+        "sku": "SKU-065",
+        "status": "changed",
+        "name": "Ring Light 10in",
+        "old_quantity": 40,
+        "new_quantity": 38,
+        "quantity_delta": -2
+      },
+      {
+        "sku": "SKU-066",
+        "status": "changed",
+        "name": "Ring Light 18in",
+        "old_quantity": 25,
+        "new_quantity": 22,
+        "quantity_delta": -3
+      },
+      {
+        "sku": "SKU-067",
+        "status": "changed",
+        "name": "Tripod Small",
+        "old_quantity": 55,
+        "new_quantity": 52,
+        "quantity_delta": -3
+      },
+      {
+        "sku": "SKU-068",
+        "status": "changed",
+        "name": "Tripod Large",
+        "old_quantity": 35,
+        "new_quantity": 33,
+        "quantity_delta": -2
+      },
+      {
+        "sku": "SKU-069",
+        "status": "changed",
+        "name": "Green Screen",
+        "old_quantity": 20,
+        "new_quantity": 18,
+        "quantity_delta": -2
+      },
+      {
+        "sku": "SKU-070",
+        "status": "changed",
+        "name": "Backdrop Stand",
+        "old_quantity": 15,
+        "new_quantity": 12,
+        "quantity_delta": -3
+      },
+      {
+        "sku": "SKU-071",
+        "status": "changed",
+        "name": "USB Microphone",
+        "old_quantity": 30,
+        "new_quantity": 28,
+        "quantity_delta": -2
+      },
+      {
+        "sku": "SKU-072",
+        "status": "changed",
+        "name": "XLR Microphone",
+        "old_quantity": 20,
+        "new_quantity": 18,
+        "quantity_delta": -2
+      },
+      {
+        "sku": "SKU-073",
+        "status": "changed",
+        "name": "Pop Filter",
+        "old_quantity": 100,
+        "new_quantity": 95,
+        "quantity_delta": -5
+      },
+      {
+        "sku": "SKU-074",
+        "status": "changed",
+        "name": "Boom Arm",
+        "old_quantity": 45,
+        "new_quantity": 42,
+        "quantity_delta": -3
+      },
+      {
+        "sku": "SKU-075",
+        "status": "changed",
+        "name": "Shock Mount",
+        "old_quantity": 40,
+        "new_quantity": 38,
+        "quantity_delta": -2
+      }
+    ],
+    "unchanged": [
+      {
+        "sku": "SKU-006",
+        "status": "unchanged",
+        "name": "Connector Cable 10ft",
+        "old_quantity": 350,
+        "new_quantity": 350,
+        "quantity_delta": 0
+      },
+      {
+        "sku": "SKU-007",
+        "status": "unchanged",
+        "name": "Power Supply Unit",
+        "old_quantity": 80,
+        "new_quantity": 80,
+        "quantity_delta": 0
+      }
+    ]
+  },
+  "skipped_skus": [
+    "SKU-045"
+  ],
+  "quality_issues": [
+    {
+      "sku": "SKU-035",
+      "field": "name",
+      "issue_type": "whitespace",
+      "detail": "Whitespace in product name: 'Cable Ties 100pk ' \u2192 'Cable Ties 100pk'",
+      "snapshot": "snapshot_1",
+      "original_value": "Cable Ties 100pk ",
+      "corrected_value": "Cable Ties 100pk",
+      "severity": "warning"
+    },
+    {
+      "sku": "SKU-052",
+      "field": "name",
+      "issue_type": "whitespace",
+      "detail": "Whitespace in product name: ' Compressed Air Can' \u2192 'Compressed Air Can'",
+      "snapshot": "snapshot_1",
+      "original_value": " Compressed Air Can",
+      "corrected_value": "Compressed Air Can",
+      "severity": "warning"
+    },
+    {
+      "sku": "SKU-005",
+      "field": "sku",
+      "issue_type": "sku_format",
+      "detail": "SKU format inconsistency: 'SKU005' normalized to 'SKU-005'",
+      "snapshot": "snapshot_2",
+      "original_value": "SKU005",
+      "corrected_value": "SKU-005",
+      "severity": "warning"
+    },
+    {
+      "sku": "SKU-008",
+      "field": "sku",
+      "issue_type": "sku_format",
+      "detail": "SKU format inconsistency: 'sku-008' normalized to 'SKU-008'",
+      "snapshot": "snapshot_2",
+      "original_value": "sku-008",
+      "corrected_value": "SKU-008",
+      "severity": "warning"
+    },
+    {
+      "sku": "SKU-018",
+      "field": "sku",
+      "issue_type": "sku_format",
+      "detail": "SKU format inconsistency: 'SKU018' normalized to 'SKU-018'",
+      "snapshot": "snapshot_2",
+      "original_value": "SKU018",
+      "corrected_value": "SKU-018",
+      "severity": "warning"
+    },
+    {
+      "sku": "SKU-002",
+      "field": "name",
+      "issue_type": "whitespace",
+      "detail": "Whitespace in product name: ' Widget B' \u2192 'Widget B'",
+      "snapshot": "snapshot_2",
+      "original_value": " Widget B",
+      "corrected_value": "Widget B",
+      "severity": "warning"
+    },
+    {
+      "sku": "SKU-010",
+      "field": "name",
+      "issue_type": "whitespace",
+      "detail": "Whitespace in product name: 'Mounting Bracket Large ' \u2192 'Mounting Bracket Large'",
+      "snapshot": "snapshot_2",
+      "original_value": "Mounting Bracket Large ",
+      "corrected_value": "Mounting Bracket Large",
+      "severity": "warning"
+    },
+    {
+      "sku": "SKU-021",
+      "field": "name",
+      "issue_type": "whitespace",
+      "detail": "Whitespace in product name: ' HDMI Cable 3ft ' \u2192 'HDMI Cable 3ft'",
+      "snapshot": "snapshot_2",
+      "original_value": " HDMI Cable 3ft ",
+      "corrected_value": "HDMI Cable 3ft",
+      "severity": "warning"
+    },
+    {
+      "sku": "SKU-002",
+      "field": "quantity",
+      "issue_type": "float_quantity",
+      "detail": "Quantity stored as float: '70.0' \u2192 70",
+      "snapshot": "snapshot_2",
+      "original_value": "70.0",
+      "corrected_value": "70",
+      "severity": "warning"
+    },
+    {
+      "sku": "SKU-007",
+      "field": "quantity",
+      "issue_type": "float_quantity",
+      "detail": "Quantity stored as float: '80.00' \u2192 80",
+      "snapshot": "snapshot_2",
+      "original_value": "80.00",
+      "corrected_value": "80",
+      "severity": "warning"
+    },
+    {
+      "sku": "SKU-035",
+      "field": "date",
+      "issue_type": "date_format",
+      "detail": "Non-standard date format: '01/15/2024' \u2192 '2024-01-15'",
+      "snapshot": "snapshot_2",
+      "original_value": "01/15/2024",
+      "corrected_value": "2024-01-15",
+      "severity": "warning"
+    },
+    {
+      "sku": "SKU-045",
+      "field": "sku",
+      "issue_type": "duplicate_sku",
+      "detail": "SKU appears 2 times: [name='Multimeter Professional', qty=23, loc='Warehouse A'; name='Multimeter Pro', qty=-5, loc='Warehouse B']",
+      "snapshot": "snapshot_2",
+      "original_value": "SKU-045",
+      "corrected_value": null,
+      "severity": "error"
+    },
+    {
+      "sku": "SKU-045",
+      "field": "quantity",
+      "issue_type": "negative_quantity",
+      "detail": "Negative quantity: -5",
+      "snapshot": "snapshot_2",
+      "original_value": "-5",
+      "corrected_value": null,
+      "severity": "error"
+    }
+  ]
+}
