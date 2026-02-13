@@ -1,0 +1,25 @@
+# Default normalization rules for inventory reconciliation.
+# Override any section by creating a custom config and passing --config <path>.
+
+sku:
+  pattern: "^SKU-?(\\d+)$"
+  format: "SKU-{:03d}"
+  case: upper
+
+quantity:
+  allow_fractional: false
+  allow_negative: false
+
+date:
+  formats:
+    - "%Y-%m-%d"
+    - "%m/%d/%Y"
+  output_format: "%Y-%m-%d"
+
+name:
+  strip_whitespace: true
+  unicode_normalize: NFKC
+
+location:
+  title_case: true
+  unicode_normalize: NFKC

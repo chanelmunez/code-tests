@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 
 from reconciliation.models import ItemChange, QualityIssue, ReconciliationResult
-from reconciliation.reporter import generate_csv_report, generate_json_report
+from reconciliation.reporter import generate_csv_report, generate_json_report, _apply_filters
 
 
 @pytest.fixture
@@ -56,6 +56,7 @@ class TestJsonReport:
         assert "reconciliation" in data
         assert "quality_issues" in data
         assert "skipped_skus" in data
+        assert "pipeline_log" in data
 
     def test_summary_counts(self, tmp_path, sample_result):
         out = tmp_path / "report.json"
@@ -149,3 +150,81 @@ class TestCsvReport:
         out = tmp_path / "nested" / "dir" / "summary.csv"
         generate_csv_report(sample_result, out)
         assert out.exists()
+
+    def test_csv_has_priority_column(self, tmp_path, sample_result):
+        out = tmp_path / "summary.csv"
+        generate_csv_report(sample_result, out)
+        with open(out) as f:
+            reader = csv.reader(f)
+            header = next(reader)
+        assert "priority" in header
+
+    def test_csv_sort_by_delta(self, tmp_path):
+        result = ReconciliationResult(
+            changed=[
+                ItemChange(sku="SKU-001", status="changed", name="A",
+                           old_quantity=100, new_quantity=90, quantity_delta=-10, priority="medium"),
+                ItemChange(sku="SKU-002", status="changed", name="B",
+                           old_quantity=200, new_quantity=150, quantity_delta=-50, priority="high"),
+            ],
+        )
+        out = tmp_path / "sorted.csv"
+        generate_csv_report(result, out, sort_by="delta")
+        with open(out) as f:
+            rows = list(csv.DictReader(f))
+        # Largest delta first
+        assert rows[0]["sku"] == "SKU-002"
+        assert rows[1]["sku"] == "SKU-001"
+
+    def test_csv_filter_status(self, tmp_path, sample_result):
+        out = tmp_path / "filtered.csv"
+        generate_csv_report(sample_result, out, filter_status="changed")
+        with open(out) as f:
+            rows = list(csv.DictReader(f))
+        assert all(r["status"] == "changed" for r in rows)
+        assert len(rows) == 1
+
+    def test_csv_sort_by_priority(self, tmp_path):
+        result = ReconciliationResult(
+            changed=[
+                ItemChange(sku="SKU-001", status="changed", name="A",
+                           old_quantity=100, new_quantity=99, quantity_delta=-1, priority="low"),
+                ItemChange(sku="SKU-002", status="changed", name="B",
+                           old_quantity=200, new_quantity=150, quantity_delta=-50, priority="high"),
+                ItemChange(sku="SKU-003", status="changed", name="C",
+                           old_quantity=300, new_quantity=280, quantity_delta=-20, priority="medium"),
+            ],
+        )
+        out = tmp_path / "priority.csv"
+        generate_csv_report(result, out, sort_by="priority")
+        with open(out) as f:
+            rows = list(csv.DictReader(f))
+        assert rows[0]["priority"] == "high"
+        assert rows[1]["priority"] == "medium"
+        assert rows[2]["priority"] == "low"
+
+
+class TestApplyFilters:
+    """Tests for the _apply_filters helper."""
+
+    def test_filter_by_status(self):
+        items = [
+            ItemChange(sku="SKU-001", status="changed", name="A", quantity_delta=-5),
+            ItemChange(sku="SKU-002", status="added", name="B"),
+        ]
+        filtered = _apply_filters(items, filter_status="added")
+        assert len(filtered) == 1
+        assert filtered[0].sku == "SKU-002"
+
+    def test_sort_by_sku(self):
+        items = [
+            ItemChange(sku="SKU-003", status="changed", name="C"),
+            ItemChange(sku="SKU-001", status="changed", name="A"),
+        ]
+        sorted_items = _apply_filters(items, sort_by="sku")
+        assert sorted_items[0].sku == "SKU-001"
+        assert sorted_items[1].sku == "SKU-003"
+
+    def test_no_filters_returns_same(self):
+        items = [ItemChange(sku="SKU-001", status="changed", name="A")]
+        assert _apply_filters(items) == items

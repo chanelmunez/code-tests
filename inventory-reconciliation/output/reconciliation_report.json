@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generated_at": "2026-02-13T16:58:41.398974",
+    "generated_at": "2026-02-13T17:32:54.137210",
     "snapshot_1": "data/snapshot_1.csv",
     "snapshot_2": "data/snapshot_2.csv"
   },
@@ -11,8 +11,19 @@
     "removed": 2,
     "changed": 70,
     "unchanged": 2,
+    "within_tolerance": 0,
     "quality_issues": 13,
     "skipped_due_to_errors": 1
+  },
+  "health": {
+    "accuracy_rate": 2.8,
+    "total_variance": 950,
+    "variance_by_location": {
+      "Warehouse A": 199,
+      "Warehouse B": 184,
+      "Warehouse C": 567
+    },
+    "data_quality_score": 93.4
   },
   "reconciliation": {
     "added": [
@@ -68,7 +79,8 @@
         "name": "Widget A",
         "old_quantity": 150,
         "new_quantity": 145,
-        "quantity_delta": -5
+        "quantity_delta": -5,
+        "priority": "low"
       },
       {
         "sku": "SKU-002",
@@ -76,7 +88,8 @@
         "name": "Widget B",
         "old_quantity": 75,
         "new_quantity": 70,
-        "quantity_delta": -5
+        "quantity_delta": -5,
+        "priority": "medium"
       },
       {
         "sku": "SKU-003",
@@ -84,7 +97,8 @@
         "name": "Gadget Pro",
         "old_quantity": 200,
         "new_quantity": 185,
-        "quantity_delta": -15
+        "quantity_delta": -15,
+        "priority": "medium"
       },
       {
         "sku": "SKU-004",
@@ -92,7 +106,8 @@
         "name": "Gadget Lite",
         "old_quantity": 50,
         "new_quantity": 48,
-        "quantity_delta": -2
+        "quantity_delta": -2,
+        "priority": "low"
       },
       {
         "sku": "SKU-005",
@@ -100,7 +115,8 @@
         "name": "Connector Cable 6ft",
         "old_quantity": 500,
         "new_quantity": 480,
-        "quantity_delta": -20
+        "quantity_delta": -20,
+        "priority": "low"
       },
       {
         "sku": "SKU-008",
@@ -108,7 +124,8 @@
         "name": "Power Supply Unit Pro",
         "old_quantity": 45,
         "new_quantity": 42,
-        "quantity_delta": -3
+        "quantity_delta": -3,
+        "priority": "medium"
       },
       {
         "sku": "SKU-009",
@@ -116,7 +133,8 @@
         "name": "Mounting Bracket Small",
         "old_quantity": 1000,
         "new_quantity": 975,
-        "quantity_delta": -25
+        "quantity_delta": -25,
+        "priority": "low"
       },
       {
         "sku": "SKU-010",
@@ -124,7 +142,8 @@
         "name": "Mounting Bracket Large",
         "old_quantity": 750,
         "new_quantity": 720,
-        "quantity_delta": -30
+        "quantity_delta": -30,
+        "priority": "low"
       },
       {
         "sku": "SKU-011",
@@ -132,7 +151,8 @@
         "name": "LED Panel 12x12",
         "old_quantity": 120,
         "new_quantity": 115,
-        "quantity_delta": -5
+        "quantity_delta": -5,
+        "priority": "low"
       },
       {
         "sku": "SKU-012",
@@ -140,7 +160,8 @@
         "name": "LED Panel 24x24",
         "old_quantity": 90,
         "new_quantity": 85,
-        "quantity_delta": -5
+        "quantity_delta": -5,
+        "priority": "medium"
       },
       {
         "sku": "SKU-013",
@@ -148,7 +169,8 @@
         "name": "Thermal Paste Tube",
         "old_quantity": 2000,
         "new_quantity": 1850,
-        "quantity_delta": -150
+        "quantity_delta": -150,
+        "priority": "medium"
       },
       {
         "sku": "SKU-014",
@@ -156,7 +178,8 @@
         "name": "Cooling Fan 80mm",
         "old_quantity": 300,
         "new_quantity": 290,
-        "quantity_delta": -10
+        "quantity_delta": -10,
+        "priority": "low"
       },
       {
         "sku": "SKU-015",
@@ -164,7 +187,8 @@
         "name": "Cooling Fan 120mm",
         "old_quantity": 250,
         "new_quantity": 245,
-        "quantity_delta": -5
+        "quantity_delta": -5,
+        "priority": "low"
       },
       {
         "sku": "SKU-016",
@@ -172,7 +196,8 @@
         "name": "USB Hub 4-Port",
         "old_quantity": 180,
         "new_quantity": 165,
-        "quantity_delta": -15
+        "quantity_delta": -15,
+        "priority": "medium"
       },
       {
         "sku": "SKU-017",
@@ -180,7 +205,8 @@
         "name": "USB Hub 7-Port",
         "old_quantity": 95,
         "new_quantity": 88,
-        "quantity_delta": -7
+        "quantity_delta": -7,
+        "priority": "medium"
       },
       {
         "sku": "SKU-018",
@@ -188,7 +214,8 @@
         "name": "Ethernet Cable Cat5",
         "old_quantity": 800,
         "new_quantity": 750,
-        "quantity_delta": -50
+        "quantity_delta": -50,
+        "priority": "medium"
       },
       {
         "sku": "SKU-019",
@@ -196,7 +223,8 @@
         "name": "Ethernet Cable Cat6",
         "old_quantity": 600,
         "new_quantity": 580,
-        "quantity_delta": -20
+        "quantity_delta": -20,
+        "priority": "low"
       },
       {
         "sku": "SKU-020",
@@ -204,7 +232,8 @@
         "name": "Ethernet Cable Cat6a",
         "old_quantity": 400,
         "new_quantity": 390,
-        "quantity_delta": -10
+        "quantity_delta": -10,
+        "priority": "low"
       },
       {
         "sku": "SKU-021",
@@ -212,7 +241,8 @@
         "name": "HDMI Cable 3ft",
         "old_quantity": 450,
         "new_quantity": 425,
-        "quantity_delta": -25
+        "quantity_delta": -25,
+        "priority": "medium"
       },
       {
         "sku": "SKU-022",
@@ -220,7 +250,8 @@
         "name": "HDMI Cable 6ft",
         "old_quantity": 380,
         "new_quantity": 365,
-        "quantity_delta": -15
+        "quantity_delta": -15,
+        "priority": "low"
       },
       {
         "sku": "SKU-023",
@@ -228,7 +259,8 @@
         "name": "HDMI Cable 10ft",
         "old_quantity": 220,
         "new_quantity": 210,
-        "quantity_delta": -10
+        "quantity_delta": -10,
+        "priority": "low"
       },
       {
         "sku": "SKU-024",
@@ -236,7 +268,8 @@
         "name": "DisplayPort Cable",
         "old_quantity": 175,
         "new_quantity": 170,
-        "quantity_delta": -5
+        "quantity_delta": -5,
+        "priority": "low"
       },
       {
         "sku": "SKU-027",
@@ -244,7 +277,8 @@
         "name": "Audio Cable 3.5mm",
         "old_quantity": 600,
         "new_quantity": 575,
-        "quantity_delta": -25
+        "quantity_delta": -25,
+        "priority": "low"
       },
       {
         "sku": "SKU-028",
@@ -252,7 +286,8 @@
         "name": "Audio Cable RCA",
         "old_quantity": 400,
         "new_quantity": 385,
-        "quantity_delta": -15
+        "quantity_delta": -15,
+        "priority": "low"
       },
       {
         "sku": "SKU-029",
@@ -260,7 +295,8 @@
         "name": "Optical Audio Cable",
         "old_quantity": 150,
         "new_quantity": 145,
-        "quantity_delta": -5
+        "quantity_delta": -5,
+        "priority": "low"
       },
       {
         "sku": "SKU-030",
@@ -268,7 +304,8 @@
         "name": "Surge Protector 6-Outlet",
         "old_quantity": 200,
         "new_quantity": 188,
-        "quantity_delta": -12
+        "quantity_delta": -12,
+        "priority": "medium"
       },
       {
         "sku": "SKU-031",
@@ -276,7 +313,8 @@
         "name": "Surge Protector 12-Outlet",
         "old_quantity": 120,
         "new_quantity": 112,
-        "quantity_delta": -8
+        "quantity_delta": -8,
+        "priority": "medium"
       },
       {
         "sku": "SKU-032",
@@ -284,7 +322,8 @@
         "name": "Extension Cord 10ft",
         "old_quantity": 300,
         "new_quantity": 285,
-        "quantity_delta": -15
+        "quantity_delta": -15,
+        "priority": "medium"
       },
       {
         "sku": "SKU-033",
@@ -292,7 +331,8 @@
         "name": "Extension Cord 25ft",
         "old_quantity": 180,
         "new_quantity": 172,
-        "quantity_delta": -8
+        "quantity_delta": -8,
+        "priority": "low"
       },
       {
         "sku": "SKU-034",
@@ -300,7 +340,8 @@
         "name": "Power Strip",
         "old_quantity": 250,
         "new_quantity": 240,
-        "quantity_delta": -10
+        "quantity_delta": -10,
+        "priority": "low"
       },
       {
         "sku": "SKU-035",
@@ -308,7 +349,8 @@
         "name": "Cable Ties 100pk",
         "old_quantity": 1500,
         "new_quantity": 1420,
-        "quantity_delta": -80
+        "quantity_delta": -80,
+        "priority": "medium"
       },
       {
         "sku": "SKU-036",
@@ -316,7 +358,8 @@
         "name": "Cable Ties 500pk",
         "old_quantity": 400,
         "new_quantity": 385,
-        "quantity_delta": -15
+        "quantity_delta": -15,
+        "priority": "low"
       },
       {
         "sku": "SKU-037",
@@ -324,7 +367,8 @@
         "name": "Velcro Straps 50pk",
         "old_quantity": 800,
         "new_quantity": 765,
-        "quantity_delta": -35
+        "quantity_delta": -35,
+        "priority": "low"
       },
       {
         "sku": "SKU-038",
@@ -332,7 +376,8 @@
         "name": "Label Maker",
         "old_quantity": 25,
         "new_quantity": 22,
-        "quantity_delta": -3
+        "quantity_delta": -3,
+        "priority": "high"
       },
       {
         "sku": "SKU-039",
@@ -340,7 +385,8 @@
         "name": "Label Tape",
         "old_quantity": 200,
         "new_quantity": 185,
-        "quantity_delta": -15
+        "quantity_delta": -15,
+        "priority": "medium"
       },
       {
         "sku": "SKU-040",
@@ -348,7 +394,8 @@
         "name": "Screwdriver Set",
         "old_quantity": 150,
         "new_quantity": 142,
-        "quantity_delta": -8
+        "quantity_delta": -8,
+        "priority": "medium"
       },
       {
         "sku": "SKU-041",
@@ -356,7 +403,8 @@
         "name": "Precision Screwdriver Set",
         "old_quantity": 100,
         "new_quantity": 95,
-        "quantity_delta": -5
+        "quantity_delta": -5,
+        "priority": "medium"
       },
       {
         "sku": "SKU-042",
@@ -364,7 +412,8 @@
         "name": "Wire Stripper",
         "old_quantity": 75,
         "new_quantity": 70,
-        "quantity_delta": -5
+        "quantity_delta": -5,
+        "priority": "medium"
       },
       {
         "sku": "SKU-043",
@@ -372,7 +421,8 @@
         "name": "Crimping Tool",
         "old_quantity": 60,
         "new_quantity": 58,
-        "quantity_delta": -2
+        "quantity_delta": -2,
+        "priority": "low"
       },
       {
         "sku": "SKU-044",
@@ -380,7 +430,8 @@
         "name": "Multimeter Basic",
         "old_quantity": 40,
         "new_quantity": 35,
-        "quantity_delta": -5
+        "quantity_delta": -5,
+        "priority": "high"
       },
       {
         "sku": "SKU-046",
@@ -388,7 +439,8 @@
         "name": "Soldering Iron",
         "old_quantity": 35,
         "new_quantity": 32,
-        "quantity_delta": -3
+        "quantity_delta": -3,
+        "priority": "medium"
       },
       {
         "sku": "SKU-047",
@@ -396,7 +448,8 @@
         "name": "Solder Wire",
         "old_quantity": 300,
         "new_quantity": 280,
-        "quantity_delta": -20
+        "quantity_delta": -20,
+        "priority": "medium"
       },
       {
         "sku": "SKU-048",
@@ -404,7 +457,8 @@
         "name": "Heat Shrink Tubing",
         "old_quantity": 500,
         "new_quantity": 475,
-        "quantity_delta": -25
+        "quantity_delta": -25,
+        "priority": "medium"
       },
       {
         "sku": "SKU-049",
@@ -412,7 +466,8 @@
         "name": "Electrical Tape",
         "old_quantity": 800,
         "new_quantity": 760,
-        "quantity_delta": -40
+        "quantity_delta": -40,
+        "priority": "medium"
       },
       {
         "sku": "SKU-050",
@@ -420,7 +475,8 @@
         "name": "Anti-Static Wrist Strap",
         "old_quantity": 200,
         "new_quantity": 190,
-        "quantity_delta": -10
+        "quantity_delta": -10,
+        "priority": "medium"
       },
       {
         "sku": "SKU-051",
@@ -428,7 +484,8 @@
         "name": "Anti-Static Mat",
         "old_quantity": 50,
         "new_quantity": 48,
-        "quantity_delta": -2
+        "quantity_delta": -2,
+        "priority": "low"
       },
       {
         "sku": "SKU-052",
@@ -436,7 +493,8 @@
         "name": "Compressed Air Can",
         "old_quantity": 400,
         "new_quantity": 375,
-        "quantity_delta": -25
+        "quantity_delta": -25,
+        "priority": "medium"
       },
       {
         "sku": "SKU-053",
@@ -444,7 +502,8 @@
         "name": "Isopropyl Alcohol 99%",
         "old_quantity": 150,
         "new_quantity": 140,
-        "quantity_delta": -10
+        "quantity_delta": -10,
+        "priority": "medium"
       },
       {
         "sku": "SKU-054",
@@ -452,7 +511,8 @@
         "name": "Microfiber Cloth 10pk",
         "old_quantity": 300,
         "new_quantity": 285,
-        "quantity_delta": -15
+        "quantity_delta": -15,
+        "priority": "medium"
       },
       {
         "sku": "SKU-055",
@@ -460,7 +520,8 @@
         "name": "Screen Cleaner",
         "old_quantity": 250,
         "new_quantity": 235,
-        "quantity_delta": -15
+        "quantity_delta": -15,
+        "priority": "medium"
       },
       {
         "sku": "SKU-056",
@@ -468,7 +529,8 @@
         "name": "Keyboard Cleaner Gel",
         "old_quantity": 180,
         "new_quantity": 168,
-        "quantity_delta": -12
+        "quantity_delta": -12,
+        "priority": "medium"
       },
       {
         "sku": "SKU-057",
@@ -476,7 +538,8 @@
         "name": "Monitor Stand",
         "old_quantity": 45,
         "new_quantity": 42,
-        "quantity_delta": -3
+        "quantity_delta": -3,
+        "priority": "medium"
       },
       {
         "sku": "SKU-058",
@@ -484,7 +547,8 @@
         "name": "Laptop Stand",
         "old_quantity": 60,
         "new_quantity": 58,
-        "quantity_delta": -2
+        "quantity_delta": -2,
+        "priority": "low"
       },
       {
         "sku": "SKU-059",
@@ -492,7 +556,8 @@
         "name": "Tablet Stand",
         "old_quantity": 80,
         "new_quantity": 75,
-        "quantity_delta": -5
+        "quantity_delta": -5,
+        "priority": "medium"
       },
       {
         "sku": "SKU-060",
@@ -500,7 +565,8 @@
         "name": "Phone Stand",
         "old_quantity": 120,
         "new_quantity": 115,
-        "quantity_delta": -5
+        "quantity_delta": -5,
+        "priority": "low"
       },
       {
         "sku": "SKU-061",
@@ -508,7 +574,8 @@
         "name": "Desk Organizer",
         "old_quantity": 90,
         "new_quantity": 85,
-        "quantity_delta": -5
+        "quantity_delta": -5,
+        "priority": "medium"
       },
       {
         "sku": "SKU-062",
@@ -516,7 +583,8 @@
         "name": "Cable Management Box",
         "old_quantity": 110,
         "new_quantity": 105,
-        "quantity_delta": -5
+        "quantity_delta": -5,
+        "priority": "low"
       },
       {
         "sku": "SKU-063",
@@ -524,7 +592,8 @@
         "name": "Headphone Hook",
         "old_quantity": 200,
         "new_quantity": 192,
-        "quantity_delta": -8
+        "quantity_delta": -8,
+        "priority": "low"
       },
       {
         "sku": "SKU-064",
@@ -532,7 +601,8 @@
         "name": "Webcam Mount",
         "old_quantity": 75,
         "new_quantity": 72,
-        "quantity_delta": -3
+        "quantity_delta": -3,
+        "priority": "low"
       },
       {
         "sku": "SKU-065",
@@ -540,7 +610,8 @@
         "name": "Ring Light 10in",
         "old_quantity": 40,
         "new_quantity": 38,
-        "quantity_delta": -2
+        "quantity_delta": -2,
+        "priority": "medium"
       },
       {
         "sku": "SKU-066",
@@ -548,7 +619,8 @@
         "name": "Ring Light 18in",
         "old_quantity": 25,
         "new_quantity": 22,
-        "quantity_delta": -3
+        "quantity_delta": -3,
+        "priority": "high"
       },
       {
         "sku": "SKU-067",
@@ -556,7 +628,8 @@
         "name": "Tripod Small",
         "old_quantity": 55,
         "new_quantity": 52,
-        "quantity_delta": -3
+        "quantity_delta": -3,
+        "priority": "medium"
       },
       {
         "sku": "SKU-068",
@@ -564,7 +637,8 @@
         "name": "Tripod Large",
         "old_quantity": 35,
         "new_quantity": 33,
-        "quantity_delta": -2
+        "quantity_delta": -2,
+        "priority": "medium"
       },
       {
         "sku": "SKU-069",
@@ -572,7 +646,8 @@
         "name": "Green Screen",
         "old_quantity": 20,
         "new_quantity": 18,
-        "quantity_delta": -2
+        "quantity_delta": -2,
+        "priority": "medium"
       },
       {
         "sku": "SKU-070",
@@ -580,7 +655,8 @@
         "name": "Backdrop Stand",
         "old_quantity": 15,
         "new_quantity": 12,
-        "quantity_delta": -3
+        "quantity_delta": -3,
+        "priority": "high"
       },
       {
         "sku": "SKU-071",
@@ -588,7 +664,8 @@
         "name": "USB Microphone",
         "old_quantity": 30,
         "new_quantity": 28,
-        "quantity_delta": -2
+        "quantity_delta": -2,
+        "priority": "medium"
       },
       {
         "sku": "SKU-072",
@@ -596,7 +673,8 @@
         "name": "XLR Microphone",
         "old_quantity": 20,
         "new_quantity": 18,
-        "quantity_delta": -2
+        "quantity_delta": -2,
+        "priority": "medium"
       },
       {
         "sku": "SKU-073",
@@ -604,7 +682,8 @@
         "name": "Pop Filter",
         "old_quantity": 100,
         "new_quantity": 95,
-        "quantity_delta": -5
+        "quantity_delta": -5,
+        "priority": "medium"
       },
       {
         "sku": "SKU-074",
@@ -612,7 +691,8 @@
         "name": "Boom Arm",
         "old_quantity": 45,
         "new_quantity": 42,
-        "quantity_delta": -3
+        "quantity_delta": -3,
+        "priority": "medium"
       },
       {
         "sku": "SKU-075",
@@ -620,7 +700,8 @@
         "name": "Shock Mount",
         "old_quantity": 40,
         "new_quantity": 38,
-        "quantity_delta": -2
+        "quantity_delta": -2,
+        "priority": "medium"
       }
     ],
     "unchanged": [
@@ -640,7 +721,8 @@
         "new_quantity": 80,
         "quantity_delta": 0
       }
-    ]
+    ],
+    "within_tolerance": []
   },
   "skipped_skus": [
     "SKU-045"
@@ -649,8 +731,8 @@
     {
       "sku": "SKU-035",
       "field": "name",
-      "issue_type": "whitespace",
-      "detail": "Whitespace in product name: 'Cable Ties 100pk ' \u2192 'Cable Ties 100pk'",
+      "issue_type": "name_normalization",
+      "detail": "Name normalized: 'Cable Ties 100pk ' \u2192 'Cable Ties 100pk'",
       "snapshot": "snapshot_1",
       "original_value": "Cable Ties 100pk ",
       "corrected_value": "Cable Ties 100pk",
@@ -659,8 +741,8 @@
     {
       "sku": "SKU-052",
       "field": "name",
-      "issue_type": "whitespace",
-      "detail": "Whitespace in product name: ' Compressed Air Can' \u2192 'Compressed Air Can'",
+      "issue_type": "name_normalization",
+      "detail": "Name normalized: ' Compressed Air Can' \u2192 'Compressed Air Can'",
       "snapshot": "snapshot_1",
       "original_value": " Compressed Air Can",
       "corrected_value": "Compressed Air Can",
@@ -699,8 +781,8 @@
     {
       "sku": "SKU-002",
       "field": "name",
-      "issue_type": "whitespace",
-      "detail": "Whitespace in product name: ' Widget B' \u2192 'Widget B'",
+      "issue_type": "name_normalization",
+      "detail": "Name normalized: ' Widget B' \u2192 'Widget B'",
       "snapshot": "snapshot_2",
       "original_value": " Widget B",
       "corrected_value": "Widget B",
@@ -709,8 +791,8 @@
     {
       "sku": "SKU-010",
       "field": "name",
-      "issue_type": "whitespace",
-      "detail": "Whitespace in product name: 'Mounting Bracket Large ' \u2192 'Mounting Bracket Large'",
+      "issue_type": "name_normalization",
+      "detail": "Name normalized: 'Mounting Bracket Large ' \u2192 'Mounting Bracket Large'",
       "snapshot": "snapshot_2",
       "original_value": "Mounting Bracket Large ",
       "corrected_value": "Mounting Bracket Large",
@@ -719,8 +801,8 @@
     {
       "sku": "SKU-021",
       "field": "name",
-      "issue_type": "whitespace",
-      "detail": "Whitespace in product name: ' HDMI Cable 3ft ' \u2192 'HDMI Cable 3ft'",
+      "issue_type": "name_normalization",
+      "detail": "Name normalized: ' HDMI Cable 3ft ' \u2192 'HDMI Cable 3ft'",
       "snapshot": "snapshot_2",
       "original_value": " HDMI Cable 3ft ",
       "corrected_value": "HDMI Cable 3ft",
@@ -775,6 +857,34 @@
       "original_value": "-5",
       "corrected_value": null,
       "severity": "error"
+    }
+  ],
+  "pipeline_log": [
+    {
+      "stage": "load",
+      "snapshot_1_rows": 75,
+      "snapshot_2_rows": 79
+    },
+    {
+      "stage": "normalize",
+      "issues_snapshot_1": 2,
+      "issues_snapshot_2": 9,
+      "total_issues": 11
+    },
+    {
+      "stage": "validate",
+      "validation_issues_snapshot_1": 0,
+      "validation_issues_snapshot_2": 2,
+      "total_errors": 2,
+      "total_warnings": 11
+    },
+    {
+      "stage": "reconcile",
+      "added": 5,
+      "removed": 2,
+      "changed": 70,
+      "unchanged": 2,
+      "skipped": 1
     }
   ]
 }

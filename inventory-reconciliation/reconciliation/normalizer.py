@@ -7,112 +7,104 @@ from datetime import datetime
 
 import pandas as pd
 
+from .config import DEFAULT_CONFIG
 from .models import QualityIssue
 
 SKU_PATTERN = re.compile(r"^SKU-?(\d+)$", re.IGNORECASE)
 
 
-def normalize_text(raw) -> str:
-    """Normalize text using NFKC normalization and stripping whitespace.
-
-    Handles Unicode equivalence (e.g., composed vs decomposed accents)
-    and removes surrounding whitespace.
-    """
+def normalize_text(raw, unicode_form: str = "NFKC") -> str:
+    """Normalize text using Unicode normalization and stripping whitespace."""
     if raw is None or (isinstance(raw, float) and math.isnan(raw)):
         return ""
     cleaned = str(raw).strip()
-    return unicodedata.normalize("NFKC", cleaned)
+    return unicodedata.normalize(unicode_form, cleaned)
 
 
-def normalize_sku(raw) -> str:
+def normalize_sku(raw, config: dict | None = None) -> str:
     """Normalize a SKU to the canonical format SKU-NNN.
 
     Handles: missing hyphens (SKU005), lowercase (sku-008), extra whitespace,
     Unicode variations, and None/NaN values (returns empty string).
     """
+    cfg = config or DEFAULT_CONFIG["sku"]
+    pattern = re.compile(cfg.get("pattern", r"^SKU-?(\d+)$"), re.IGNORECASE)
+    case = cfg.get("case", "upper")
+
     cleaned = normalize_text(raw)
     if not cleaned:
         return ""
-    match = SKU_PATTERN.match(cleaned)
+    match = pattern.match(cleaned)
     if match:
-        digits = match.group(1).zfill(3)
-        return f"SKU-{digits}"
-    # If it doesn't match the expected pattern, return stripped uppercase
-    return cleaned.upper()
+        digits = match.group(1)
+        fmt = cfg.get("format", "SKU-{:03d}")
+        return fmt.format(int(digits))
+    return cleaned.upper() if case == "upper" else cleaned
 
 
-def normalize_quantity(raw: str) -> int | None:
+def normalize_quantity(raw: str, config: dict | None = None) -> int | None:
     """Convert a quantity string to an integer.
 
     Converts integer-valued floats (e.g., "70.0") to int.
     Rejects genuine fractional values (e.g., "70.5") — returns None.
     Returns None if the value cannot be parsed.
     """
+    cfg = config or DEFAULT_CONFIG["quantity"]
     try:
         val = float(str(raw).strip())
         int_val = int(val)
         if val != int_val:
+            if cfg.get("allow_fractional", False):
+                return int_val  # Truncate if allowed
             return None  # Genuine fraction — reject
         return int_val
     except (ValueError, TypeError, AttributeError):
         return None
 
 
-def normalize_date(raw) -> str | None:
-    """Normalize a date string to ISO format (YYYY-MM-DD).
+def normalize_date(raw, config: dict | None = None) -> str | None:
+    """Normalize a date string to the configured output format.
 
     Handles:
         - ISO format: 2024-01-15
         - US format: 01/15/2024
         - None/NaN: returns None
     """
+    cfg = config or DEFAULT_CONFIG["date"]
     if raw is None or (isinstance(raw, float) and math.isnan(raw)):
         return None
     raw_str = str(raw).strip()
     if not raw_str:
         return None
-    for fmt in ("%Y-%m-%d", "%m/%d/%Y"):
+    output_fmt = cfg.get("output_format", "%Y-%m-%d")
+    for fmt in cfg.get("formats", ["%Y-%m-%d", "%m/%d/%Y"]):
         try:
-            return datetime.strptime(raw_str, fmt).strftime("%Y-%m-%d")
+            return datetime.strptime(raw_str, fmt).strftime(output_fmt)
         except ValueError:
             continue
     return None
 
 
 def normalize_dataframe(
-    df: pd.DataFrame, snapshot_label: str
+    df: pd.DataFrame, snapshot_label: str, config: dict | None = None,
 ) -> tuple[pd.DataFrame, list[QualityIssue]]:
     """Normalize all fields in a snapshot DataFrame.
 
     Args:
         df: DataFrame with columns: sku, name, quantity, location, date.
         snapshot_label: Label for issue reporting (e.g., "snapshot_1").
+        config: Optional normalization config dict. Uses defaults if None.
 
     Returns:
         Tuple of (normalized DataFrame, list of quality issues found).
     """
+    cfg = config or DEFAULT_CONFIG
     df = df.copy()
     issues: list[QualityIssue] = []
 
     # --- SKU normalization ---
     raw_skus = df["sku"].copy()
-    df["sku"] = df["sku"].apply(normalize_sku)
-    for raw, normalized in zip(raw_skus, df["sku"]):
-        # Simple string comparison might fail if raw was None/float
-        raw_str = str(raw) if raw is not None else ""
-        if raw_str != normalized and not (raw_str == "nan" and normalized == ""):
-             # We only want to flag if it was a meaningful change, not just nan->""
-             # But the previous logic was simpler. Let's stick to what we had but be careful.
-             pass
-    
-    # Re-implement the loop with cleaner logic
-    for raw, normalized in zip(raw_skus, df["sku"]):
-        # normalize_sku returns "" for None/NaN. 
-        # We generally report issues if the content changed significantly.
-        pass
-    
-    # Actually, let's keep the original reporting logic structure but use the new normalized values
-    # The original loop:
+    df["sku"] = df["sku"].apply(lambda x: normalize_sku(x, cfg.get("sku")))
     for raw, normalized in zip(raw_skus, df["sku"]):
         if raw != normalized:
             issues.append(QualityIssue(
@@ -126,8 +118,10 @@ def normalize_dataframe(
             ))
 
     # --- Name normalization (Unicode + whitespace) ---
+    name_cfg = cfg.get("name", {})
+    unicode_form = name_cfg.get("unicode_normalize", "NFKC")
     raw_names = df["name"].copy()
-    df["name"] = df["name"].apply(normalize_text)
+    df["name"] = df["name"].apply(lambda x: normalize_text(x, unicode_form))
     for sku, raw, cleaned in zip(df["sku"], raw_names, df["name"]):
         if raw != cleaned:
             issues.append(QualityIssue(
@@ -141,12 +135,12 @@ def normalize_dataframe(
             ))
 
     # --- Quantity normalization ---
+    qty_cfg = cfg.get("quantity", {})
     raw_quantities = df["quantity"].copy()
-    df["quantity"] = df["quantity"].apply(normalize_quantity)
+    df["quantity"] = df["quantity"].apply(lambda x: normalize_quantity(x, qty_cfg))
     for sku, raw, normalized in zip(df["sku"], raw_quantities, df["quantity"]):
         raw_str = str(raw).strip()
         if normalized is None and raw_str:
-            # Determine whether it's a fraction or completely unparseable
             try:
                 float_val = float(raw_str)
                 if float_val != int(float_val):
@@ -170,7 +164,6 @@ def normalize_dataframe(
                     severity="error",
                 ))
         elif normalized is not None and "." in raw_str:
-            # Integer stored as float (70.0 → 70) — cosmetic, not an error
             issues.append(QualityIssue(
                 sku=sku,
                 field="quantity",
@@ -182,15 +175,20 @@ def normalize_dataframe(
             ))
 
     # --- Location normalization (Unicode + Title Case) ---
+    loc_cfg = cfg.get("location", {})
+    loc_unicode = loc_cfg.get("unicode_normalize", "NFKC")
+    use_title = loc_cfg.get("title_case", True)
     raw_locations = df["location"].copy()
-    # Normalize unicode then Title Case
-    df["location"] = df["location"].apply(lambda x: normalize_text(x).title())
-    
+    if use_title:
+        df["location"] = df["location"].apply(
+            lambda x: normalize_text(x, loc_unicode).title()
+        )
+    else:
+        df["location"] = df["location"].apply(lambda x: normalize_text(x, loc_unicode))
+
     for sku, raw, cleaned in zip(df["sku"], raw_locations, df["location"]):
         if raw != cleaned:
-            # We don't always need to report this as a "QualityIssue" if it's just casing,
-            # but it helps to be transparent.
-             issues.append(QualityIssue(
+            issues.append(QualityIssue(
                 sku=sku,
                 field="location",
                 issue_type="location_normalization",
@@ -201,8 +199,9 @@ def normalize_dataframe(
             ))
 
     # --- Date normalization ---
+    date_cfg = cfg.get("date", {})
     raw_dates = df["date"].copy()
-    df["date"] = df["date"].apply(normalize_date)
+    df["date"] = df["date"].apply(lambda x: normalize_date(x, date_cfg))
     for sku, raw, normalized in zip(df["sku"], raw_dates, df["date"]):
         raw_str = str(raw).strip()
         if normalized is None and raw_str:

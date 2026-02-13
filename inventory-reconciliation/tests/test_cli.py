@@ -20,7 +20,8 @@ class TestCli:
             capture_output=True, text=True, cwd=PROJECT_DIR,
         )
         assert result.returncode == 0
-        assert "RECONCILIATION SUMMARY" in result.stdout
+        output = result.stdout + result.stderr
+        assert "RECONCILIATION SUMMARY" in output
 
     def test_creates_output_files(self, tmp_path):
         result = subprocess.run(
@@ -46,12 +47,12 @@ class TestCli:
             [sys.executable, "reconcile.py"],
             capture_output=True, text=True, cwd=PROJECT_DIR,
         )
-        # Verify key counts appear in the console summary
-        assert "Added" in result.stdout
-        assert "Removed" in result.stdout
-        assert "Changed" in result.stdout
-        assert "Unchanged" in result.stdout
-        assert "Skipped" in result.stdout
+        output = result.stdout + result.stderr
+        assert "Added" in output
+        assert "Removed" in output
+        assert "Changed" in output
+        assert "Unchanged" in output
+        assert "Skipped" in output
 
     def test_custom_snapshot_paths(self, tmp_path):
         # Create minimal valid CSVs
@@ -73,6 +74,37 @@ class TestCli:
         assert result.returncode == 0
         report = json.loads((out_dir / "reconciliation_report.json").read_text())
         assert report["summary"]["changed"] == 1
+
+    def test_json_log_format(self, tmp_path):
+        result = subprocess.run(
+            [sys.executable, "reconcile.py", "--log-format", "json", "--output-dir", str(tmp_path)],
+            capture_output=True, text=True, cwd=PROJECT_DIR,
+        )
+        assert result.returncode == 0
+        # Each line of stderr should be valid JSON
+        lines = [l for l in result.stderr.strip().split("\n") if l.strip()]
+        json_lines = []
+        for line in lines:
+            try:
+                json_lines.append(json.loads(line))
+            except json.JSONDecodeError:
+                pass
+        assert len(json_lines) > 0
+        messages = [j.get("message", "") for j in json_lines]
+        assert any("Loading" in m for m in messages)
+
+    def test_pipeline_log_in_json_report(self, tmp_path):
+        subprocess.run(
+            [sys.executable, "reconcile.py", "--output-dir", str(tmp_path)],
+            capture_output=True, text=True, cwd=PROJECT_DIR,
+        )
+        report = json.loads((tmp_path / "reconciliation_report.json").read_text())
+        assert "pipeline_log" in report
+        stages = [entry["stage"] for entry in report["pipeline_log"]]
+        assert "load" in stages
+        assert "normalize" in stages
+        assert "validate" in stages
+        assert "reconcile" in stages
 
     def test_nonexistent_file_exits_with_error(self):
         result = subprocess.run(

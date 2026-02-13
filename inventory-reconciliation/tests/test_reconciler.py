@@ -307,6 +307,389 @@ class TestReconcileEdgeCases:
         assert len(result.quality_issues) == 1
 
 
+class TestReconcileCompositeKey:
+    """Tests for SKU+location composite key mode."""
+
+    def test_same_sku_different_locations_not_duplicate(self):
+        """In sku_location mode, same SKU in different warehouses are separate items."""
+        df1 = pd.DataFrame({
+            "sku": ["SKU-001", "SKU-001"],
+            "name": ["Widget", "Widget"],
+            "quantity": [100, 50],
+            "location": ["Warehouse A", "Warehouse B"],
+            "date": ["2024-01-08", "2024-01-08"],
+        })
+        df2 = pd.DataFrame({
+            "sku": ["SKU-001", "SKU-001"],
+            "name": ["Widget", "Widget"],
+            "quantity": [90, 45],
+            "location": ["Warehouse A", "Warehouse B"],
+            "date": ["2024-01-15", "2024-01-15"],
+        })
+        result = reconcile(df1, df2, key_mode="sku_location")
+        assert len(result.changed) == 2
+        assert len(result.skipped_skus) == 0
+
+    def test_same_sku_same_location_is_duplicate_in_composite(self):
+        """In sku_location mode, duplicate (sku, location) pairs are excluded."""
+        df1 = pd.DataFrame({
+            "sku": ["SKU-001", "SKU-001"],
+            "name": ["Widget", "Widget v2"],
+            "quantity": [100, 50],
+            "location": ["Warehouse A", "Warehouse A"],
+            "date": ["2024-01-08", "2024-01-08"],
+        })
+        df2 = pd.DataFrame({
+            "sku": ["SKU-001"],
+            "name": ["Widget"],
+            "quantity": [90],
+            "location": ["Warehouse A"],
+            "date": ["2024-01-15"],
+        })
+        result = reconcile(df1, df2, key_mode="sku_location")
+        assert "SKU-001|Warehouse A" in result.skipped_skus
+
+    def test_composite_detects_location_transfer(self):
+        """Item appears in new location (added) and disappears from old (removed)."""
+        df1 = pd.DataFrame({
+            "sku": ["SKU-001"],
+            "name": ["Widget"],
+            "quantity": [100],
+            "location": ["Warehouse A"],
+            "date": ["2024-01-08"],
+        })
+        df2 = pd.DataFrame({
+            "sku": ["SKU-001"],
+            "name": ["Widget"],
+            "quantity": [100],
+            "location": ["Warehouse B"],
+            "date": ["2024-01-15"],
+        })
+        result = reconcile(df1, df2, key_mode="sku_location")
+        assert len(result.removed) == 1
+        assert result.removed[0].sku == "SKU-001"
+        assert len(result.added) == 1
+        assert result.added[0].sku == "SKU-001"
+
+    def test_composite_unchanged(self):
+        """Identical items at same locations are unchanged."""
+        df1 = pd.DataFrame({
+            "sku": ["SKU-001"],
+            "name": ["Widget"],
+            "quantity": [100],
+            "location": ["Warehouse A"],
+            "date": ["2024-01-08"],
+        })
+        df2 = df1.copy()
+        result = reconcile(df1, df2, key_mode="sku_location")
+        assert len(result.unchanged) == 1
+
+    def test_sku_mode_flags_multi_location_as_duplicate(self):
+        """In default sku mode, same SKU in different locations is a duplicate."""
+        df1 = pd.DataFrame({
+            "sku": ["SKU-001", "SKU-001"],
+            "name": ["Widget", "Widget"],
+            "quantity": [100, 50],
+            "location": ["Warehouse A", "Warehouse B"],
+            "date": ["2024-01-08", "2024-01-08"],
+        })
+        df2 = pd.DataFrame({
+            "sku": ["SKU-001"],
+            "name": ["Widget"],
+            "quantity": [90],
+            "location": ["Warehouse A"],
+            "date": ["2024-01-15"],
+        })
+        result = reconcile(df1, df2, key_mode="sku")
+        assert "SKU-001" in result.skipped_skus
+
+
+class TestReconcileFuzzyNameMatching:
+    """Tests for fuzzy name similarity scoring."""
+
+    def test_similar_names_high_score(self):
+        """'Multimeter Pro' → 'Multimeter Professional' should have high similarity."""
+        df1 = pd.DataFrame({
+            "sku": ["SKU-001"], "name": ["Multimeter Pro"],
+            "quantity": [40], "location": ["WA"], "date": ["2024-01-08"],
+        })
+        df2 = pd.DataFrame({
+            "sku": ["SKU-001"], "name": ["Multimeter Professional"],
+            "quantity": [35], "location": ["WA"], "date": ["2024-01-15"],
+        })
+        result = reconcile(df1, df2)
+        item = result.changed[0]
+        assert item.name_changed is True
+        assert item.name_similarity is not None
+        assert item.name_similarity > 0.7
+
+    def test_different_names_low_score(self):
+        """Completely different names should have a low similarity score."""
+        df1 = pd.DataFrame({
+            "sku": ["SKU-001"], "name": ["Widget Alpha"],
+            "quantity": [100], "location": ["WA"], "date": ["2024-01-08"],
+        })
+        df2 = pd.DataFrame({
+            "sku": ["SKU-001"], "name": ["Zebra Connector"],
+            "quantity": [95], "location": ["WA"], "date": ["2024-01-15"],
+        })
+        result = reconcile(df1, df2)
+        item = result.changed[0]
+        assert item.name_similarity is not None
+        assert item.name_similarity < 0.5
+
+    def test_identical_names_no_similarity_score(self):
+        """When names match, name_similarity should be None."""
+        df1 = pd.DataFrame({
+            "sku": ["SKU-001"], "name": ["Widget"],
+            "quantity": [100], "location": ["WA"], "date": ["2024-01-08"],
+        })
+        df2 = pd.DataFrame({
+            "sku": ["SKU-001"], "name": ["Widget"],
+            "quantity": [90], "location": ["WA"], "date": ["2024-01-15"],
+        })
+        result = reconcile(df1, df2)
+        item = result.changed[0]
+        assert item.name_changed is False
+        assert item.name_similarity is None
+
+    def test_similarity_in_to_dict(self):
+        """Similarity score should appear in to_dict output when name changed."""
+        df1 = pd.DataFrame({
+            "sku": ["SKU-001"], "name": ["Cable 6ft"],
+            "quantity": [100], "location": ["WA"], "date": ["2024-01-08"],
+        })
+        df2 = pd.DataFrame({
+            "sku": ["SKU-001"], "name": ["Cable 6 ft"],
+            "quantity": [100], "location": ["WA"], "date": ["2024-01-15"],
+        })
+        result = reconcile(df1, df2)
+        d = result.changed[0].to_dict()
+        assert "name_similarity" in d
+        assert d["name_similarity"] > 0.8
+
+    def test_similarity_in_flat_dict(self):
+        """Similarity score should appear in to_flat_dict for CSV output."""
+        df1 = pd.DataFrame({
+            "sku": ["SKU-001"], "name": ["Widget Pro"],
+            "quantity": [100], "location": ["WA"], "date": ["2024-01-08"],
+        })
+        df2 = pd.DataFrame({
+            "sku": ["SKU-001"], "name": ["Widget Professional"],
+            "quantity": [90], "location": ["WA"], "date": ["2024-01-15"],
+        })
+        result = reconcile(df1, df2)
+        flat = result.changed[0].to_flat_dict()
+        assert "name_similarity" in flat
+
+
+class TestReconcileTolerance:
+    """Tests for variance tolerance bands."""
+
+    def _make_pair(self, qty1, qty2):
+        df1 = pd.DataFrame({
+            "sku": ["SKU-001"],
+            "name": ["Widget"],
+            "quantity": [qty1],
+            "location": ["WA"],
+            "date": ["2024-01-08"],
+        })
+        df2 = pd.DataFrame({
+            "sku": ["SKU-001"],
+            "name": ["Widget"],
+            "quantity": [qty2],
+            "location": ["WA"],
+            "date": ["2024-01-15"],
+        })
+        return df1, df2
+
+    def test_no_tolerance_default(self):
+        """With default tolerance=0, any delta is a change."""
+        df1, df2 = self._make_pair(100, 99)
+        result = reconcile(df1, df2)
+        assert len(result.changed) == 1
+        assert len(result.within_tolerance) == 0
+
+    def test_absolute_tolerance_within(self):
+        """Delta of 5 is within absolute tolerance of 5."""
+        df1, df2 = self._make_pair(100, 95)
+        result = reconcile(df1, df2, tolerance=5)
+        assert len(result.within_tolerance) == 1
+        assert len(result.changed) == 0
+        assert result.within_tolerance[0].status == "within_tolerance"
+        assert result.within_tolerance[0].quantity_delta == -5
+
+    def test_absolute_tolerance_exceeds(self):
+        """Delta of 6 exceeds absolute tolerance of 5."""
+        df1, df2 = self._make_pair(100, 94)
+        result = reconcile(df1, df2, tolerance=5)
+        assert len(result.changed) == 1
+        assert len(result.within_tolerance) == 0
+
+    def test_percentage_tolerance_within(self):
+        """Delta of 2% is within 5% tolerance."""
+        df1, df2 = self._make_pair(1000, 980)
+        result = reconcile(df1, df2, tolerance_pct=5.0)
+        assert len(result.within_tolerance) == 1
+        assert len(result.changed) == 0
+
+    def test_percentage_tolerance_exceeds(self):
+        """Delta of 10% exceeds 5% tolerance."""
+        df1, df2 = self._make_pair(100, 90)
+        result = reconcile(df1, df2, tolerance_pct=5.0)
+        assert len(result.changed) == 1
+        assert len(result.within_tolerance) == 0
+
+    def test_name_change_not_tolerated(self):
+        """Name changes are never within tolerance, even if qty delta is small."""
+        df1 = pd.DataFrame({
+            "sku": ["SKU-001"], "name": ["Widget Pro"],
+            "quantity": [100], "location": ["WA"], "date": ["2024-01-08"],
+        })
+        df2 = pd.DataFrame({
+            "sku": ["SKU-001"], "name": ["Widget Professional"],
+            "quantity": [99], "location": ["WA"], "date": ["2024-01-15"],
+        })
+        result = reconcile(df1, df2, tolerance=5)
+        assert len(result.changed) == 1
+        assert len(result.within_tolerance) == 0
+
+    def test_within_tolerance_counted_in_summary(self):
+        """within_tolerance items count towards snapshot totals."""
+        df1, df2 = self._make_pair(100, 99)
+        result = reconcile(df1, df2, tolerance=5)
+        s = result.summary
+        assert s["within_tolerance"] == 1
+        assert s["changed"] == 0
+        assert s["total_snapshot_1"] == 1
+        assert s["total_snapshot_2"] == 1
+
+
+class TestReconcilePriority:
+    """Tests for priority assignment on changed items."""
+
+    def test_high_priority_for_large_variance(self):
+        """Greater than 10% change = high priority."""
+        df1 = pd.DataFrame({
+            "sku": ["SKU-001"], "name": ["Widget"],
+            "quantity": [100], "location": ["WA"], "date": ["2024-01-08"],
+        })
+        df2 = pd.DataFrame({
+            "sku": ["SKU-001"], "name": ["Widget"],
+            "quantity": [80], "location": ["WA"], "date": ["2024-01-15"],
+        })
+        result = reconcile(df1, df2)
+        assert result.changed[0].priority == "high"
+
+    def test_medium_priority_for_moderate_variance(self):
+        """5-10% change = medium priority."""
+        df1 = pd.DataFrame({
+            "sku": ["SKU-001"], "name": ["Widget"],
+            "quantity": [100], "location": ["WA"], "date": ["2024-01-08"],
+        })
+        df2 = pd.DataFrame({
+            "sku": ["SKU-001"], "name": ["Widget"],
+            "quantity": [93], "location": ["WA"], "date": ["2024-01-15"],
+        })
+        result = reconcile(df1, df2)
+        assert result.changed[0].priority == "medium"
+
+    def test_low_priority_for_small_variance(self):
+        """Less than 5% change = low priority."""
+        df1 = pd.DataFrame({
+            "sku": ["SKU-001"], "name": ["Widget"],
+            "quantity": [100], "location": ["WA"], "date": ["2024-01-08"],
+        })
+        df2 = pd.DataFrame({
+            "sku": ["SKU-001"], "name": ["Widget"],
+            "quantity": [97], "location": ["WA"], "date": ["2024-01-15"],
+        })
+        result = reconcile(df1, df2)
+        assert result.changed[0].priority == "low"
+
+    def test_high_priority_for_name_change(self):
+        """Any name change = high priority regardless of qty delta."""
+        df1 = pd.DataFrame({
+            "sku": ["SKU-001"], "name": ["Widget Pro"],
+            "quantity": [100], "location": ["WA"], "date": ["2024-01-08"],
+        })
+        df2 = pd.DataFrame({
+            "sku": ["SKU-001"], "name": ["Widget Professional"],
+            "quantity": [99], "location": ["WA"], "date": ["2024-01-15"],
+        })
+        result = reconcile(df1, df2)
+        assert result.changed[0].priority == "high"
+
+    def test_unchanged_has_no_priority(self, clean_snapshot_1):
+        result = reconcile(clean_snapshot_1, clean_snapshot_1.copy())
+        for item in result.unchanged:
+            assert item.priority is None
+
+
+class TestReconcileHealthScore:
+    """Tests for inventory health statistics."""
+
+    def test_accuracy_rate_all_unchanged(self):
+        """100% accuracy when nothing changed."""
+        df = pd.DataFrame({
+            "sku": ["SKU-001", "SKU-002"],
+            "name": ["A", "B"],
+            "quantity": [100, 50],
+            "location": ["WA", "WA"],
+            "date": ["2024-01-08", "2024-01-08"],
+        })
+        result = reconcile(df, df.copy())
+        assert result.health["accuracy_rate"] == 100.0
+
+    def test_accuracy_rate_with_changes(self, clean_snapshot_1, clean_snapshot_2):
+        """Accuracy < 100 when items changed."""
+        result = reconcile(clean_snapshot_1, clean_snapshot_2)
+        health = result.health
+        # 1 unchanged out of 4 common items = 25%
+        assert health["accuracy_rate"] == 25.0
+
+    def test_total_variance(self, clean_snapshot_1, clean_snapshot_2):
+        """Total variance sums absolute deltas."""
+        result = reconcile(clean_snapshot_1, clean_snapshot_2)
+        # SKU-001: |90-100|=10, SKU-003: |210-200|=10, SKU-005: |480-500|=20
+        assert result.health["total_variance"] == 40
+
+    def test_data_quality_score_clean_data(self, clean_snapshot_1, clean_snapshot_2):
+        """Clean data should have high quality score."""
+        result = reconcile(clean_snapshot_1, clean_snapshot_2)
+        assert result.health["data_quality_score"] == 100.0
+
+    def test_data_quality_score_with_issues(self):
+        """Quality score decreases with issues."""
+        from reconciliation.models import QualityIssue
+        df = pd.DataFrame({
+            "sku": ["SKU-001", "SKU-002"],
+            "name": ["A", "B"],
+            "quantity": [100, 50],
+            "location": ["WA", "WA"],
+            "date": ["2024-01-08", "2024-01-08"],
+        })
+        issues = [
+            QualityIssue(sku="SKU-001", field="name", issue_type="whitespace",
+                         detail="test", snapshot="snap1"),
+        ]
+        result = reconcile(df, df.copy(), quality_issues=issues)
+        assert result.health["data_quality_score"] < 100.0
+
+    def test_health_in_json_report(self, tmp_path, clean_snapshot_1, clean_snapshot_2):
+        """Health stats should appear in JSON report."""
+        from reconciliation.reporter import generate_json_report
+        import json
+        result = reconcile(clean_snapshot_1, clean_snapshot_2)
+        out = tmp_path / "report.json"
+        generate_json_report(result, out)
+        data = json.loads(out.read_text())
+        assert "health" in data
+        assert "accuracy_rate" in data["health"]
+        assert "total_variance" in data["health"]
+        assert "data_quality_score" in data["health"]
+
+
 class TestReconcileSummary:
     """Tests for the summary property."""
 
