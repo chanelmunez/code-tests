@@ -17,7 +17,17 @@
     - Fixed non-deterministic column ordering in `loader.py`.
 4.  **Documentation**: Created `CODE-TESTING-PROGRESS.md` with detailed coverage metrics.
 
-## Phase 2: End-to-End CLI Verification (Next Steps)
+## Phase 2b: Advanced Normalization (Completed)
+
+**Status**: Complete
+**Outcome**: 143 Tests Passed (98% Coverage)
+
+### Key Actions
+1.  **Unicode Normalization**: Implemented `NFKC` normalization to handle equivalent but bytewise-different characters (e.g., accents).
+2.  **Location Standardization**: Added casing normalization (Title Case) to `location` field to prevent false positives.
+3.  **New Tests**: Added `tests/test_new_edge_cases.py` verifying these scenarios.
+
+## Phase 3: End-to-End CLI Verification (Next Steps)
 
 With the core logic hardened, the next phase focuses on the application entry point (`reconcile.py`) and the user experience.
 

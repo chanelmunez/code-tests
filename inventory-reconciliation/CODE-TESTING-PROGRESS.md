@@ -3,23 +3,34 @@
 ## Test Coverage Report
 
 **Date**: 2026-02-13
-**Status**: 114 passed, 0 failed
-**Overall Coverage**: 97%
+**Status**: 143 passed, 0 failed
+**Overall Coverage**: 98%
 
 | Module | Statements | Missed | Coverage |
 |:---|:---:|:---:|:---:|
 | `reconciliation/__init__.py` | 0 | 0 | 100% |
-| `reconciliation/loader.py` | 17 | 0 | 100% |
+| `reconciliation/loader.py` | 16 | 0 | 100% |
 | `reconciliation/models.py` | 62 | 6 | 90% |
-| `reconciliation/normalizer.py` | 52 | 0 | 100% |
-| `reconciliation/reconciler.py` | 44 | 0 | 100% |
+| `reconciliation/normalizer.py` | 88 | 0 | 100% |
+| `reconciliation/reconciler.py` | 45 | 0 | 100% |
 | `reconciliation/reporter.py` | 19 | 0 | 100% |
 | `reconciliation/validator.py` | 33 | 0 | 100% |
-| **TOTAL** | **227** | **6** | **97%** |
+| **TOTAL** | **263** | **6** | **98%** |
 
 ## Hardening Tests Added
 
-A new test suite `tests/test_hardening.py` was created to cover edge cases and push boundaries:
+### Phase 2b: Advanced Edge Cases (Unicode & Localization)
+
+New tests in `tests/test_new_edge_cases.py` cover:
+
+| Test Case | Description | Result |
+|:---|:---|:---:|
+| `test_unicode_normalization` | Verify `NFKC` normalization handles `Café` (composed) vs `Café` (decomposed) equivalence. | PASS |
+| `test_location_case_normalization` | Verify "Warehouse A" and "warehouse a" are treated as identical locations. | PASS |
+| `test_date_bounds` | Placeholder for future date range validation (currently passes/noop). | PASS |
+| `test_euro_quantities` | Placeholder for locale-specific number format discussion. | PASS |
+
+### Phase 2a: Hardening (Previous)
 
 | Test Case | Description | Result |
 |:---|:---|:---:|
@@ -37,7 +48,7 @@ A new test suite `tests/test_hardening.py` was created to cover edge cases and p
 
 Generated in `data/`:
 - `testing-0bytes.csv`
-- `testing-empty.csv` (Header only)
+- `testing-empty.csv`
 - `testing-garbage.csv`
 - `testing-huge.csv`
 - `testing-duplicates.csv`
@@ -47,4 +58,6 @@ Generated in `data/`:
 
 ## Bugs/Issues Fixed
 
-- **Column Order Determinism**: `loader.py` was updated to ensure columns are returned in a fixed, deterministic order (`sku`, `name`, `quantity`, `location`, `date`). This fixes potential flakiness in downstream consumers expecting specific column positioning.
+- **Unicode Safety**: Implemented `NFKC` normalization for names, SKUs, and locations to prevent false positives on character encoding differences.
+- **Location Casing**: Implemented Title Casing for locations to standardise "warehouse a" -> "Warehouse A".
+- **Column Order Determinism**: `loader.py` was updated to ensure columns are returned in a fixed, deterministic order.

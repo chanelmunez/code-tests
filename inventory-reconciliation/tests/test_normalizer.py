@@ -149,7 +149,7 @@ class TestNormalizeDataframe:
 
     def test_reports_whitespace_issues(self, raw_snapshot_strings):
         _, issues = normalize_dataframe(raw_snapshot_strings, "test")
-        ws_issues = [i for i in issues if i.issue_type == "whitespace"]
+        ws_issues = [i for i in issues if i.issue_type == "name_normalization"]
         # " Widget B", "Gadget Pro ", " Gadget Lite "
         assert len(ws_issues) == 3
 

@@ -2,6 +2,7 @@
 
 import math
 import re
+import unicodedata
 from datetime import datetime
 
 import pandas as pd
@@ -11,15 +12,25 @@ from .models import QualityIssue
 SKU_PATTERN = re.compile(r"^SKU-?(\d+)$", re.IGNORECASE)
 
 
-def normalize_sku(raw) -> str:
-    """Normalize a SKU to the canonical format SKU-NNN.
+def normalize_text(raw) -> str:
+    """Normalize text using NFKC normalization and stripping whitespace.
 
-    Handles: missing hyphens (SKU005), lowercase (sku-008), extra whitespace,
-    and None/NaN values (returns empty string).
+    Handles Unicode equivalence (e.g., composed vs decomposed accents)
+    and removes surrounding whitespace.
     """
     if raw is None or (isinstance(raw, float) and math.isnan(raw)):
         return ""
     cleaned = str(raw).strip()
+    return unicodedata.normalize("NFKC", cleaned)
+
+
+def normalize_sku(raw) -> str:
+    """Normalize a SKU to the canonical format SKU-NNN.
+
+    Handles: missing hyphens (SKU005), lowercase (sku-008), extra whitespace,
+    Unicode variations, and None/NaN values (returns empty string).
+    """
+    cleaned = normalize_text(raw)
     if not cleaned:
         return ""
     match = SKU_PATTERN.match(cleaned)
@@ -87,6 +98,22 @@ def normalize_dataframe(
     raw_skus = df["sku"].copy()
     df["sku"] = df["sku"].apply(normalize_sku)
     for raw, normalized in zip(raw_skus, df["sku"]):
+        # Simple string comparison might fail if raw was None/float
+        raw_str = str(raw) if raw is not None else ""
+        if raw_str != normalized and not (raw_str == "nan" and normalized == ""):
+             # We only want to flag if it was a meaningful change, not just nan->""
+             # But the previous logic was simpler. Let's stick to what we had but be careful.
+             pass
+    
+    # Re-implement the loop with cleaner logic
+    for raw, normalized in zip(raw_skus, df["sku"]):
+        # normalize_sku returns "" for None/NaN. 
+        # We generally report issues if the content changed significantly.
+        pass
+    
+    # Actually, let's keep the original reporting logic structure but use the new normalized values
+    # The original loop:
+    for raw, normalized in zip(raw_skus, df["sku"]):
         if raw != normalized:
             issues.append(QualityIssue(
                 sku=normalized,
@@ -98,16 +125,16 @@ def normalize_dataframe(
                 corrected_value=normalized,
             ))
 
-    # --- Name normalization (strip whitespace) ---
+    # --- Name normalization (Unicode + whitespace) ---
     raw_names = df["name"].copy()
-    df["name"] = df["name"].str.strip()
+    df["name"] = df["name"].apply(normalize_text)
     for sku, raw, cleaned in zip(df["sku"], raw_names, df["name"]):
         if raw != cleaned:
             issues.append(QualityIssue(
                 sku=sku,
                 field="name",
-                issue_type="whitespace",
-                detail=f"Whitespace in product name: '{raw}' → '{cleaned}'",
+                issue_type="name_normalization",
+                detail=f"Name normalized: '{raw}' → '{cleaned}'",
                 snapshot=snapshot_label,
                 original_value=str(raw),
                 corrected_value=str(cleaned),
@@ -154,8 +181,24 @@ def normalize_dataframe(
                 corrected_value=str(normalized),
             ))
 
-    # --- Location normalization (strip whitespace) ---
-    df["location"] = df["location"].str.strip()
+    # --- Location normalization (Unicode + Title Case) ---
+    raw_locations = df["location"].copy()
+    # Normalize unicode then Title Case
+    df["location"] = df["location"].apply(lambda x: normalize_text(x).title())
+    
+    for sku, raw, cleaned in zip(df["sku"], raw_locations, df["location"]):
+        if raw != cleaned:
+            # We don't always need to report this as a "QualityIssue" if it's just casing,
+            # but it helps to be transparent.
+             issues.append(QualityIssue(
+                sku=sku,
+                field="location",
+                issue_type="location_normalization",
+                detail=f"Location normalized: '{raw}' → '{cleaned}'",
+                snapshot=snapshot_label,
+                original_value=str(raw),
+                corrected_value=cleaned,
+            ))
 
     # --- Date normalization ---
     raw_dates = df["date"].copy()
