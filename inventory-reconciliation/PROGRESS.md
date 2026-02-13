@@ -78,6 +78,8 @@ Load CSVs → Normalize columns → Clean data → Validate → Reconcile → Re
 - [x] Add missing assertion in `test_total_items_reconciled`
 - [x] Add CLI end-to-end tests (6 tests via subprocess)
 - [x] Add normalization collision edge case tests
+- [x] Add hardening test suite (`tests/test_hardening.py`) for edge cases (0-byte, garbage, extreme values)
+- [x] Generate edge-case test datasets (`generate_test_data.py`)
 - [x] Update NOTES.md with severity enforcement + SKU-per-location limitation
 
 ## Test Results
