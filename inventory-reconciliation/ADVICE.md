@@ -16,3 +16,12 @@ _Last review: Fri Feb 13 16:44 CST 2026_
 ## Cleanup / follow-ups
 - Remove unused imports like `sys` in `reconcile.py` (reconcile.py:10-18) and trim the unused `enumerate` variables in the normalizer to keep lint noise down.
 - Next review checkpoint: revisit after fixes/commits land or by 17:00 CST to ensure the above risks are addressed and no new regressions were introduced.
+
+---
+
+_Follow-up review: Fri Feb 13 16:55 CST 2026_
+
+## Documentation gaps
+- **README is still the assessment brief** – `README.md:1-51` repeats the recruiter instructions but never documents *this* implementation (setup, dependency install, how to run `reconcile.py`, where reports/tests land, expected outputs). Replace or extend it with a project README that covers usage and troubleshooting so future maintainers don't have to reverse-engineer the workflow.
+- **NOTES omit current limitations** – `NOTES.md:5-27` highlights architecture decisions but skips the unresolved risks we already identified (e.g., normalization crashes on blank SKUs, date/location issues flow downstream, severity errors don’t block reconciliation). Call these out explicitly so reviewers know what still needs hardening.
+- **Progress log lacks open items** – `PROGRESS.md:50-90` marks every checkbox complete and lists final metrics, yet we still have outstanding QA work (missing assertions, CLI gaps, data-validation bugs). Add a "Next steps" / "Known issues" section so the document reflects reality and keeps the backlog visible.
