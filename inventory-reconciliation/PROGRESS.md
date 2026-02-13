@@ -16,7 +16,13 @@ _Last updated: 2026-02-13_
 | Foundation | ✅ | Core modules, CLI, baseline tests, NOTES.md authored |
 | Hardening | ✅ | Added loader/normalizer guards, duplicate handling, edge-case datasets, CLI subprocess tests |
 | Advice-driven QA | ✅ | Added regression tests (`tests/test_quality_gaps.py`), integration count assertions, expanded ADVICE log |
-| Documentation refresh | 🚧 | README/NOTES updated, PROGRESS/TESTING pending alignment with open issues |
+| Documentation refresh | ✅ | README/NOTES/PROGRESS/TESTING synced with current functionality and outstanding risks |
+
+**Recent activity (today)**
+
+1. Captured up-to-date setup/run/test instructions in README so new contributors can get started quickly.
+2. Documented current limitations and next steps in NOTES/PROGRESS/TESTING, keeping the log in chronological order alongside previous contributors' work.
+3. Logged the documentation refresh in ADVICE.md to maintain the review trail.
 
 ## Test Matrix
 
