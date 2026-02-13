@@ -5,7 +5,7 @@ _Last updated: 2026-02-13_
 ## Current Snapshot
 
 - **Codebase**: Modular pipeline (load → normalize → validate → reconcile → report) implemented under `reconciliation/` with CLI entry point `reconcile.py`.
-- **Tests**: 201 passing tests covering unit, integration, CLI, hardening, regression, and configuration suites.
+- **Tests**: 203 passing tests covering unit, integration, CLI, hardening, regression, and configuration suites.
 - **Reports**: JSON + CSV artefacts written to `output/` (overridable via `--output-dir`).
 - **Reviews**: Running critique/advice captured in `ADVICE.md`.
 
@@ -34,19 +34,19 @@ _Last updated: 2026-02-13_
 ## Test Matrix
 
 ```
-pytest  # 201 passed in ~3.5s on Python 3.12
+pytest  # 203 passed in ~4.1s on Python 3.12
 ```
 
 Key suites:
 
-- `test_loader.py` (8), `test_normalizer.py` (46), `test_validator.py` (17), `test_reconciler.py` (42), `test_reporter.py` (22)
-- `test_cli.py` (8) — subprocess coverage for default/custom flags
-- `test_hardening.py` (9) — edge cases (0-byte, garbage, duplicates)
-- `test_integration.py` (16) — end-to-end pipeline
-- `test_config.py` (11) — YAML configuration loading
-- `test_quality_gaps.py` (4) — regression tests
-- `test_new_edge_cases.py` (4) — Unicode/Casing
-- `test_advice_coverage.py` (6) — Loader/Severity verification
+- `test_loader.py`, `test_normalizer.py`, `test_validator.py`, `test_reconciler.py`, `test_reporter.py`
+- `test_cli.py` — subprocess coverage for default/custom flags and failure modes
+- `test_hardening.py` — edge cases (0-byte, garbage, duplicates)
+- `test_integration.py` — end-to-end pipeline
+- `test_config.py` — YAML configuration loading
+- `test_quality_gaps.py` — regression tests derived from ADVICE
+- `test_new_edge_cases.py` — Unicode/Casing
+- `test_advice_coverage.py` — Loader/Severity verification
 
 ## Reconciliation Results
 

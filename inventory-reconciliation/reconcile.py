@@ -102,15 +102,30 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=None,
         help="Filter CSV output to only show items with this status",
     )
+    parser.add_argument(
+        "--allow-errors",
+        action="store_true",
+        help=(
+            "Continue and write reports even if error-level data quality issues are found "
+            "(default: fail fast)."
+        ),
+    )
     return parser.parse_args(argv)
 
 
-def _log(message: str, log_format: str = "text", **kwargs) -> None:
+def _log(
+    message: str,
+    log_format: str = "text",
+    *,
+    level: int = logging.INFO,
+    **kwargs,
+) -> None:
     """Log a message, optionally as JSON."""
+    payload = {"message": message, **kwargs}
     if log_format == "json":
-        logger.info(json.dumps({"message": message, **kwargs}))
+        logger.log(level, json.dumps(payload))
     else:
-        logger.info(message)
+        logger.log(level, message)
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -176,6 +191,33 @@ def main(argv: list[str] | None = None) -> None:
         "total_errors": error_count,
         "total_warnings": warning_count,
     })
+
+    if error_count > 0 and not args.allow_errors:
+        error_issues = [issue for issue in all_issues if issue.severity == "error"]
+        _log(
+            "Error-level data quality issues detected. Aborting before reconciliation. "
+            "Re-run with --allow-errors to produce reports anyway.",
+            args.log_format,
+            stage="validate",
+            level=logging.ERROR,
+            errors=error_count,
+        )
+        for issue in error_issues[:5]:
+            _log(
+                f"  [{issue.sku}] {issue.issue_type}: {issue.detail}",
+                args.log_format,
+                stage="validate",
+                level=logging.ERROR,
+            )
+        remaining = len(error_issues) - 5
+        if remaining > 0:
+            _log(
+                f"  ... {remaining} additional error issues omitted",
+                args.log_format,
+                stage="validate",
+                level=logging.ERROR,
+            )
+        raise SystemExit(1)
 
     # --- Reconcile ---
     _log("Reconciling snapshots ...", args.log_format, stage="reconcile")

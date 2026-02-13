@@ -16,7 +16,7 @@ class TestCli:
 
     def test_runs_successfully_with_defaults(self):
         result = subprocess.run(
-            [sys.executable, "reconcile.py"],
+            [sys.executable, "reconcile.py", "--allow-errors"],
             capture_output=True, text=True, cwd=PROJECT_DIR,
         )
         assert result.returncode == 0
@@ -25,7 +25,13 @@ class TestCli:
 
     def test_creates_output_files(self, tmp_path):
         result = subprocess.run(
-            [sys.executable, "reconcile.py", "--output-dir", str(tmp_path)],
+            [
+                sys.executable,
+                "reconcile.py",
+                "--output-dir",
+                str(tmp_path),
+                "--allow-errors",
+            ],
             capture_output=True, text=True, cwd=PROJECT_DIR,
         )
         assert result.returncode == 0
@@ -34,7 +40,13 @@ class TestCli:
 
     def test_json_output_is_valid(self, tmp_path):
         subprocess.run(
-            [sys.executable, "reconcile.py", "--output-dir", str(tmp_path)],
+            [
+                sys.executable,
+                "reconcile.py",
+                "--output-dir",
+                str(tmp_path),
+                "--allow-errors",
+            ],
             capture_output=True, text=True, cwd=PROJECT_DIR,
         )
         report = json.loads((tmp_path / "reconciliation_report.json").read_text())
@@ -44,7 +56,7 @@ class TestCli:
 
     def test_summary_output_counts(self):
         result = subprocess.run(
-            [sys.executable, "reconcile.py"],
+            [sys.executable, "reconcile.py", "--allow-errors"],
             capture_output=True, text=True, cwd=PROJECT_DIR,
         )
         output = result.stdout + result.stderr
@@ -77,7 +89,15 @@ class TestCli:
 
     def test_json_log_format(self, tmp_path):
         result = subprocess.run(
-            [sys.executable, "reconcile.py", "--log-format", "json", "--output-dir", str(tmp_path)],
+            [
+                sys.executable,
+                "reconcile.py",
+                "--log-format",
+                "json",
+                "--output-dir",
+                str(tmp_path),
+                "--allow-errors",
+            ],
             capture_output=True, text=True, cwd=PROJECT_DIR,
         )
         assert result.returncode == 0
@@ -95,7 +115,13 @@ class TestCli:
 
     def test_pipeline_log_in_json_report(self, tmp_path):
         subprocess.run(
-            [sys.executable, "reconcile.py", "--output-dir", str(tmp_path)],
+            [
+                sys.executable,
+                "reconcile.py",
+                "--output-dir",
+                str(tmp_path),
+                "--allow-errors",
+            ],
             capture_output=True, text=True, cwd=PROJECT_DIR,
         )
         report = json.loads((tmp_path / "reconciliation_report.json").read_text())
@@ -112,3 +138,34 @@ class TestCli:
             capture_output=True, text=True, cwd=PROJECT_DIR,
         )
         assert result.returncode != 0
+
+    def test_fails_on_errors_by_default(self):
+        result = subprocess.run(
+            [sys.executable, "reconcile.py"],
+            capture_output=True,
+            text=True,
+            cwd=PROJECT_DIR,
+        )
+        assert result.returncode != 0
+        output = result.stdout + result.stderr
+        assert "allow-errors" in output or "allow-errors" in result.stderr
+
+    def test_allow_errors_flag_enables_reports(self, tmp_path):
+        result = subprocess.run(
+            [
+                sys.executable,
+                "reconcile.py",
+                "--snapshot1",
+                "data/snapshot_1.csv",
+                "--snapshot2",
+                "data/snapshot_2.csv",
+                "--output-dir",
+                str(tmp_path),
+                "--allow-errors",
+            ],
+            capture_output=True,
+            text=True,
+            cwd=PROJECT_DIR,
+        )
+        assert result.returncode == 0
+        assert (tmp_path / "reconciliation_report.json").exists()

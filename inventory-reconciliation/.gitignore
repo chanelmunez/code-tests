@@ -1,0 +1,11 @@
+# Python artefacts
+__pycache__/
+*.pyc
+.venv/
+
+# Tooling
+.coverage
+.pytest_cache/
+
+# Generated reports
+output/

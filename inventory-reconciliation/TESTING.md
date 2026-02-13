@@ -7,7 +7,7 @@ _Last updated: 2026-02-13_
 The project ships with a pytest suite that exercises the entire pipeline—from CSV ingestion through reporting—plus CLI subprocess tests and regression suites distilled from ongoing reviews.
 
 ```
-pytest  # 172 passed in ~3.3s on Python 3.12
+pytest  # 203 passed in ~4.1s on Python 3.12
 ```
 
 ## Coverage Highlights
@@ -31,8 +31,7 @@ pytest  # 172 passed in ~3.3s on Python 3.12
 
 | Gap | Impact | Planned Action |
 |-----|--------|----------------|
-| CLI continues with return code 0 even when error-level issues occur | Operators may miss critical data-quality failures | Decide on fail-fast policy; add CLI test enforcing chosen behavior |
-| Generated artefacts remain in repo after tests (`output/`, `.coverage`) | Dirty working tree post-`pytest` | Update tests to use temp dirs and extend `.gitignore` |
+| Generated artefacts remain in repo after tests (`output/`, `.coverage`) | Dirty working tree post-`pytest` | Update tests to use temp dirs (where possible) and extend `.gitignore` |
 | Multi-warehouse / ABC cycle-count strategies untested | Limits confidence for future feature work | Add design + tests once feature work begins |
 
 ## How to Run

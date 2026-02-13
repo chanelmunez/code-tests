@@ -80,7 +80,7 @@ def test_cli_reports_duplicate_skus(tmp_path):
         capture_output=True,
         text=True,
     )
-    assert result.returncode == 0
+    assert result.returncode != 0
     output = result.stdout + result.stderr
-    assert "Skipped SKUs" in output
+    assert "allow-errors" in output.lower()
     assert "SKU-001" in output
