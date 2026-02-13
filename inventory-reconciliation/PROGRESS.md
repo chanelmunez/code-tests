@@ -82,20 +82,32 @@ Load CSVs → Normalize columns → Clean data → Validate → Reconcile → Re
 - [x] Generate edge-case test datasets (`generate_test_data.py`)
 - [x] Update NOTES.md with severity enforcement + SKU-per-location limitation
 
+## Phase 3: Advice & Feedback Implementation
+
+- [x] Loader: `keep_default_na=False` to prevent NaN injection
+- [x] Normalizer: Robust guards for None/NaN inputs
+- [x] Severity: Strict exclusion of error-level SKUs from reconciliation
+- [x] Validation: Empty string vs NaN testing (`tests/test_advice_coverage.py`)
+- [x] Advanced Normalization: NFKC Unicode normalization
+- [x] Advanced Normalization: Location Title Casing
+
 ## Test Results
 
 ```
-130 passed in 2.28s
+149 passed in 2.53s
 ```
 
 **Test breakdown:**
-- `test_loader.py` — 8 tests (CSV loading, column mapping, error handling)
-- `test_normalizer.py` — 30 tests (SKU/quantity/date normalization, None/NaN guards, fractional rejection)
-- `test_validator.py` — 13 tests (duplicates, negatives, nulls across all fields)
-- `test_reconciler.py` — 19 tests (add/remove/change, duplicates, error exclusion, collisions)
-- `test_reporter.py` — 15 tests (JSON structure, CSV format, file creation)
-- `test_integration.py` — 16 tests (full pipeline with real data)
-- `test_cli.py` — 6 tests (subprocess CLI, argument parsing, output files)
+- `test_loader.py` — 8 tests
+- `test_normalizer.py` — 30+ tests
+- `test_validator.py` — 13 tests
+- `test_reconciler.py` — 19 tests
+- `test_reporter.py` — 15 tests
+- `test_integration.py` — 16 tests
+- `test_cli.py` — 6 tests
+- `test_hardening.py` — 9 tests
+- `test_new_edge_cases.py` — 4 tests
+- `test_advice_coverage.py` — 6 tests
 
 ## Reconciliation Results
 
