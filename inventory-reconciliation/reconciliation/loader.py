@@ -32,7 +32,8 @@ def load_snapshot(path: str | Path) -> pd.DataFrame:
     if not path.exists():
         raise FileNotFoundError(f"Snapshot file not found: {path}")
 
-    df = pd.read_csv(path, dtype=str)  # Read everything as string initially
+    # Read CSV, treating empty cells as empty strings instead of NaN
+    df = pd.read_csv(path, dtype=str, keep_default_na=False)
 
     # Normalize column names: strip whitespace and lowercase
     df.columns = df.columns.str.strip().str.lower()

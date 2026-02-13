@@ -3,21 +3,31 @@
 ## Test Coverage Report
 
 **Date**: 2026-02-13
-**Status**: 143 passed, 0 failed
+**Status**: 149 passed, 0 failed
 **Overall Coverage**: 98%
 
 | Module | Statements | Missed | Coverage |
 |:---|:---:|:---:|:---:|
 | `reconciliation/__init__.py` | 0 | 0 | 100% |
 | `reconciliation/loader.py` | 16 | 0 | 100% |
-| `reconciliation/models.py` | 62 | 6 | 90% |
+| `reconciliation/models.py` | 63 | 6 | 90% |
 | `reconciliation/normalizer.py` | 88 | 0 | 100% |
 | `reconciliation/reconciler.py` | 45 | 0 | 100% |
 | `reconciliation/reporter.py` | 19 | 0 | 100% |
 | `reconciliation/validator.py` | 33 | 0 | 100% |
-| **TOTAL** | **263** | **6** | **98%** |
+| **TOTAL** | **264** | **6** | **98%** |
 
 ## Hardening Tests Added
+
+### Phase 3: Advice & Feedback Coverage
+
+New tests in `tests/test_advice_coverage.py` cover:
+
+| Test Case | Description | Result |
+|:---|:---|:---:|
+| `test_loader_reads_empty_strings_not_nan` | Verify `keep_default_na=False` prevents `NaN` injection for blank cells. | PASS |
+| `test_normalize_sku_guards` | Verify `normalize_sku` handles `None`/`NaN` gracefully. | PASS |
+| `test_reconciler_skips_unique_error_sku` | Verify that *any* error-level issue (e.g., negative qty) excludes the SKU from diffs. | PASS |
 
 ### Phase 2b: Advanced Edge Cases (Unicode & Localization)
 

@@ -17,6 +17,16 @@
     - Fixed non-deterministic column ordering in `loader.py`.
 4.  **Documentation**: Created `CODE-TESTING-PROGRESS.md` with detailed coverage metrics.
 
+## Phase 2: End-to-End CLI Verification (Completed)
+
+**Status**: Complete
+**Outcome**: All CLI tests passed.
+
+### Key Actions
+1.  **CLI Usability**: Verified friendly error messages and proper output file creation.
+2.  **Report Integrity**: Confirmed JSON and CSV outputs are generated correctly.
+3.  **Performance Check**: Confirmed robust handling of large files.
+
 ## Phase 2b: Advanced Normalization (Completed)
 
 **Status**: Complete
@@ -27,21 +37,18 @@
 2.  **Location Standardization**: Added casing normalization (Title Case) to `location` field to prevent false positives.
 3.  **New Tests**: Added `tests/test_new_edge_cases.py` verifying these scenarios.
 
-## Phase 3: End-to-End CLI Verification (Next Steps)
+## Phase 3: Advice & Feedback Implementation (Completed)
 
-With the core logic hardened, the next phase focuses on the application entry point (`reconcile.py`) and the user experience.
+**Status**: Complete
+**Outcome**: 149 Tests Passed (98% Coverage)
 
-### Objectives
-1.  **CLI Usability**: Verify that the command-line interface provides clear feedback, especially for the error cases identified in Phase 1 (e.g., "garbage file" should print a friendly error, not a stack trace).
-2.  **Report Integrity**: Manually inspect the generated JSON and CSV reports from the "happy path" to ensure they match stakeholder expectations (formatting, headers).
-3.  **Performance Check**: Run the CLI against the `testing-huge.csv` dataset to ensure the script completes within a reasonable time and doesn't crash the terminal.
+### Key Actions
+1.  **Loader Robustness**: Updated `loader.py` to read empty cells as empty strings (`""`) instead of `NaN`, preventing downstream type errors.
+2.  **Severity Enforcement**: Verified that *any* error-level issue (not just duplicates) causes an SKU to be excluded from reconciliation.
+3.  **Crash Guards**: Verified `normalize_*` functions handle `None`/`NaN` gracefully.
+4.  **New Tests**: Added `tests/test_advice_coverage.py` to explicitly verify these fixes.
 
-### Planned Tests
-1.  **Happy Path**: Run `reconcile.py` with `data/snapshot_1.csv` and `data/snapshot_2.csv`. Check `output/` folder.
-2.  **Error Handling**: Run `reconcile.py` against `data/testing-garbage.csv`. Expect: Non-zero exit code + friendly stderr message.
-3.  **Mixed Quality**: Run `reconcile.py` against `data/testing-duplicates.csv`. Expect: Successful execution but with "Quality Issues" logged in the report.
+## Next Steps
 
-## Phase 3: Final Polish (Future)
-
-- Update `README.md` if CLI usage differs from documentation.
 - Final code cleanup (remove temporary test data).
+- Update README with usage instructions.
