@@ -62,6 +62,14 @@ Load CSVs → Normalize columns → Clean data → Validate → Reconcile → Re
 - [x] NOTES.md
 - [x] Git commits
 
+## QA & Hardening
+
+- [x] Edge case analysis
+- [x] Hardening test suite (`tests/test_hardening.py`)
+- [x] Bug fix: Deterministic column loading
+- [ ] CLI End-to-End Verification
+- [ ] Final Report Review
+
 ## Test Results
 
 ```
