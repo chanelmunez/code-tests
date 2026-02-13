@@ -48,7 +48,8 @@ def load_snapshot(path: str | Path) -> pd.DataFrame:
             f"Available columns: {list(df.columns)}"
         )
 
-    # Keep only standard columns
-    df = df[list(required_columns)]
+    # Keep only standard columns in fixed order
+    ordered_columns = ["sku", "name", "quantity", "location", "date"]
+    df = df[ordered_columns]
 
     return df
