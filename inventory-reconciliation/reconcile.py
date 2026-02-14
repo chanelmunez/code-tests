@@ -38,7 +38,19 @@ def _setup_logging(log_format: str = "text", log_level: str = "INFO") -> None:
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Reconcile two inventory snapshots and generate a change report."
+        description="Reconcile two inventory snapshots and generate a change report.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""\
+examples:
+  python reconcile.py                                    # basic run (fails on errors)
+  python reconcile.py --allow-errors                     # continue despite data issues
+  python reconcile.py --key-mode sku_location            # composite key (multi-warehouse)
+  python reconcile.py --tolerance 5                      # ignore deltas <= 5 units
+  python reconcile.py --tolerance-pct 2                  # ignore deltas <= 2%
+  python reconcile.py --sort delta --filter changed      # sort by largest delta, only changes
+  python reconcile.py --config custom.yaml               # custom normalization rules
+  python reconcile.py --log-format json                  # structured JSON logging
+""",
     )
     parser.add_argument(
         "--snapshot1",

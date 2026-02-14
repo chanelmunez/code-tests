@@ -1,10 +1,10 @@
 """Configuration loader for normalization rules.
 
-Loads rules from a YAML config file, with sensible defaults matching
-the current hardcoded behavior so that existing behavior is preserved
-when no config is provided.
+Loads rules from a YAML config file, with sensible defaults so that
+existing behavior is preserved when no config is provided.
 """
 
+import copy
 from pathlib import Path
 
 import yaml
@@ -20,7 +20,7 @@ DEFAULT_CONFIG = {
         "allow_negative": False,
     },
     "date": {
-        "formats": ["%Y-%m-%d", "%m/%d/%Y"],
+        "formats": ["%Y-%m-%d", "%m/%d/%Y", "%d-%b-%Y", "%Y/%m/%d"],
         "output_format": "%Y-%m-%d",
     },
     "name": {
@@ -30,6 +30,10 @@ DEFAULT_CONFIG = {
     "location": {
         "title_case": True,
         "unicode_normalize": "NFKC",
+    },
+    "priority": {
+        "high_threshold_pct": 10,
+        "medium_threshold_pct": 5,
     },
 }
 
@@ -43,7 +47,7 @@ def load_config(path: str | Path | None = None) -> dict:
     Returns:
         Config dict with all keys populated (user overrides merged on top of defaults).
     """
-    config = _deep_copy_dict(DEFAULT_CONFIG)
+    config = copy.deepcopy(DEFAULT_CONFIG)
     if path is not None:
         path = Path(path)
         if not path.exists():
@@ -52,19 +56,6 @@ def load_config(path: str | Path | None = None) -> dict:
             user_config = yaml.safe_load(f) or {}
         _deep_merge(config, user_config)
     return config
-
-
-def _deep_copy_dict(d: dict) -> dict:
-    """Deep copy a dict of dicts/lists/primitives."""
-    result = {}
-    for k, v in d.items():
-        if isinstance(v, dict):
-            result[k] = _deep_copy_dict(v)
-        elif isinstance(v, list):
-            result[k] = v[:]
-        else:
-            result[k] = v
-    return result
 
 
 def _deep_merge(base: dict, override: dict) -> None:

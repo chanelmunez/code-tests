@@ -1,5 +1,8 @@
 # Inventory Reconciliation
 
+> **Solution**: See [`PROJECT-README.md`](PROJECT-README.md) for setup, usage, and CLI reference.
+> Run `python reconcile.py --help` for all available flags.
+
 ## Background
 
 You're working with inventory data from a warehouse management system. Two snapshots were taken a week apart, and you need to reconcile them to understand what changed.

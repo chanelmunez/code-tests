@@ -33,16 +33,18 @@ def find_duplicate_skus(df: pd.DataFrame, snapshot_label: str) -> list[QualityIs
 def find_negative_quantities(df: pd.DataFrame, snapshot_label: str) -> list[QualityIssue]:
     """Flag rows where quantity is negative."""
     issues: list[QualityIssue] = []
-    negatives = df[df["quantity"].notna() & (df["quantity"] < 0)]
+    qty_numeric = pd.to_numeric(df["quantity"], errors="coerce")
+    neg_mask = qty_numeric.notna() & (qty_numeric < 0)
 
-    for _, row in negatives.iterrows():
+    for idx in df.index[neg_mask]:
+        row = df.loc[idx]
         issues.append(QualityIssue(
             sku=row["sku"],
             field="quantity",
             issue_type="negative_quantity",
-            detail=f"Negative quantity: {int(row['quantity'])}",
+            detail=f"Negative quantity: {int(qty_numeric[idx])}",
             snapshot=snapshot_label,
-            original_value=str(int(row["quantity"])),
+            original_value=str(row["quantity"]),
             severity="error",
         ))
 
@@ -54,8 +56,9 @@ def find_null_fields(df: pd.DataFrame, snapshot_label: str) -> list[QualityIssue
     issues: list[QualityIssue] = []
 
     for col in ["sku", "name", "quantity", "location", "date"]:
-        nulls = df[df[col].isna() | (df[col].astype(str).str.strip() == "")]
-        for _, row in nulls.iterrows():
+        null_mask = df[col].isna() | (df[col].astype(str).str.strip() == "")
+        for idx in df.index[null_mask]:
+            row = df.loc[idx]
             issues.append(QualityIssue(
                 sku=row.get("sku", "UNKNOWN"),
                 field=col,

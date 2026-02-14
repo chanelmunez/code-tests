@@ -34,7 +34,7 @@ class TestLoadConfig:
         cfg_file.write_text("date:\n  output_format: '%d/%m/%Y'\n")
         config = load_config(cfg_file)
         assert config["date"]["output_format"] == "%d/%m/%Y"
-        assert config["date"]["formats"] == ["%Y-%m-%d", "%m/%d/%Y"]
+        assert config["date"]["formats"] == ["%Y-%m-%d", "%m/%d/%Y", "%d-%b-%Y", "%Y/%m/%d"]
 
     def test_file_not_found(self, tmp_path):
         with pytest.raises(FileNotFoundError):

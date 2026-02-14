@@ -5,7 +5,7 @@ _Last updated: 2026-02-13_
 ## Current Snapshot
 
 - **Codebase**: Modular pipeline (load → normalize → validate → reconcile → report) implemented under `reconciliation/` with CLI entry point `reconcile.py`.
-- **Tests**: 204 passing tests covering unit, integration, CLI, hardening, regression, and configuration suites.
+- **Tests**: 216 passing tests covering unit, integration, CLI, hardening, regression, and configuration suites.
 - **Reports**: JSON + CSV artefacts written to `output/` (overridable via `--output-dir`).
 - **Reviews**: Running critique/advice captured in `ADVICE.md`.
 
@@ -20,6 +20,7 @@ _Last updated: 2026-02-13_
 | Logic Robustness (Phase 3) | ✅ | Unicode/Casing normalization, strict severity enforcement, CSV loader `NaN` fix |
 | Packaging & CI | ✅ | Added `pyproject.toml`, Dockerfile, and GitHub Actions workflow |
 | PM Review | ✅ | Comprehensive ADVICE.md rewrite with project state assessment, risk matrix, and recommendations |
+| Advice-driven fixes | ✅ | Fixed 3 bugs (int guard, BOM, CSV None), rapidfuzz, vectorized validator, configurable priority, 12 new tests, Makefile, ruff/mypy config |
 
 **Recent activity (Chronological)**
 
@@ -37,7 +38,7 @@ _Last updated: 2026-02-13_
 ## Test Matrix
 
 ```
-pytest  # 204 passed in ~4.2s on Python 3.12
+pytest  # 216 passed in ~5.6s on Python 3.12
 ```
 
 Key suites:

@@ -44,21 +44,30 @@ def _within_tolerance(
     return False
 
 
-def _assign_priority(delta: int, old_qty: int, name_changed: bool) -> str:
+def _assign_priority(
+    delta: int,
+    old_qty: int,
+    name_changed: bool,
+    high_pct: float = 10,
+    medium_pct: float = 5,
+) -> str:
     """Assign a priority level based on the magnitude of change.
 
-    - high: name change, or >10% quantity variance
-    - medium: 5-10% quantity variance
-    - low: <5% quantity variance
+    Args:
+        delta: Quantity change.
+        old_qty: Original quantity.
+        name_changed: Whether the product name differs.
+        high_pct: Percentage threshold above which priority is "high".
+        medium_pct: Percentage threshold above which priority is "medium".
     """
     if name_changed:
         return "high"
     if old_qty == 0:
         return "high" if delta != 0 else "low"
     pct = abs(delta) / abs(old_qty) * 100
-    if pct > 10:
+    if pct > high_pct:
         return "high"
-    if pct >= 5:
+    if pct >= medium_pct:
         return "medium"
     return "low"
 
@@ -70,6 +79,7 @@ def reconcile(
     key_mode: str = "sku",
     tolerance: int = 0,
     tolerance_pct: float = 0.0,
+    config: dict | None = None,
 ) -> ReconciliationResult:
     """Reconcile two normalized inventory snapshots.
 
@@ -88,6 +98,9 @@ def reconcile(
         ReconciliationResult with categorized items and quality issues.
     """
     quality_issues = list(quality_issues) if quality_issues else []
+    priority_cfg = (config or {}).get("priority", {})
+    high_pct = priority_cfg.get("high_threshold_pct", 10)
+    medium_pct = priority_cfg.get("medium_threshold_pct", 5)
 
     # Identify keys to exclude: duplicates + any with error-level issues
     if key_mode == "sku":
@@ -103,32 +116,34 @@ def reconcile(
     }
     skipped = dupes_1 | dupes_2
 
-    # Build keys for each row
-    df1 = df1.copy()
-    df2 = df2.copy()
-    df1["_key"] = _build_key(df1, key_mode)
-    df2["_key"] = _build_key(df2, key_mode)
+    # Build key series without modifying the original DataFrames
+    keys1 = _build_key(df1, key_mode)
+    keys2 = _build_key(df2, key_mode)
 
     # Exclude error SKUs (always by raw SKU, since errors are per-SKU)
     if error_skus:
-        df1 = df1[~df1["sku"].isin(error_skus)]
-        df2 = df2[~df2["sku"].isin(error_skus)]
+        mask1 = ~df1["sku"].isin(error_skus)
+        mask2 = ~df2["sku"].isin(error_skus)
+        df1, keys1 = df1[mask1], keys1[mask1]
+        df2, keys2 = df2[mask2], keys2[mask2]
         skipped = skipped | error_skus
 
     if skipped:
-        df1 = df1[~df1["_key"].isin(skipped)].copy()
-        df2 = df2[~df2["_key"].isin(skipped)].copy()
+        mask1 = ~keys1.isin(skipped)
+        mask2 = ~keys2.isin(skipped)
+        df1, keys1 = df1[mask1], keys1[mask1]
+        df2, keys2 = df2[mask2], keys2[mask2]
 
-    keys_1 = set(df1["_key"])
-    keys_2 = set(df2["_key"])
+    keys_1_set = set(keys1)
+    keys_2_set = set(keys2)
 
-    removed_keys = keys_1 - keys_2
-    added_keys = keys_2 - keys_1
-    common_keys = keys_1 & keys_2
+    removed_keys = keys_1_set - keys_2_set
+    added_keys = keys_2_set - keys_1_set
+    common_keys = keys_1_set & keys_2_set
 
     # Index by key for efficient lookups
-    snap1 = df1.set_index("_key")
-    snap2 = df2.set_index("_key")
+    snap1 = df1.set_index(keys1)
+    snap2 = df2.set_index(keys2)
 
     added: list[ItemChange] = []
     removed: list[ItemChange] = []
@@ -200,7 +215,7 @@ def reconcile(
                 similarity = None
                 if name_diff:
                     similarity = round(fuzz.ratio(name1, name2) / 100.0, 3)
-                priority = _assign_priority(delta, qty1, name_diff)
+                priority = _assign_priority(delta, qty1, name_diff, high_pct, medium_pct)
                 changed.append(ItemChange(
                     sku=row2["sku"],
                     status="changed",
