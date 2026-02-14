@@ -15,7 +15,7 @@ SORT_KEYS = {
 }
 
 
-def _apply_filters(
+def apply_filters(
     items: list[ItemChange],
     sort_by: str | None = None,
     filter_status: str | None = None,
@@ -37,13 +37,17 @@ def generate_json_report(
     run_id: str | None = None,
 ) -> None:
     """Write a full structured reconciliation report as JSON."""
+    effective_run_id = run_id or result.run_id
+    metadata = {
+        "generated_at": datetime.now().isoformat(),
+        "snapshot_1": str(snapshot_1_path),
+        "snapshot_2": str(snapshot_2_path),
+    }
+    if effective_run_id:
+        metadata["run_id"] = effective_run_id
+
     report = {
-        "metadata": {
-            "generated_at": datetime.now().isoformat(),
-            "snapshot_1": str(snapshot_1_path),
-            "snapshot_2": str(snapshot_2_path),
-            "run_id": run_id or result.run_id,
-        },
+        "metadata": metadata,
         "summary": result.summary,
         "health": result.health,
         "reconciliation": {
@@ -98,7 +102,7 @@ def generate_csv_report(
         "priority",
     ]
 
-    items = _apply_filters(result.all_items, sort_by, filter_status)
+    items = apply_filters(result.all_items, sort_by, filter_status)
 
     with open(output_path, "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)

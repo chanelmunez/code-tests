@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 
 from reconciliation.models import ItemChange, QualityIssue, ReconciliationResult
-from reconciliation.reporter import generate_csv_report, generate_json_report, _apply_filters
+from reconciliation.reporter import generate_csv_report, generate_json_report, apply_filters
 
 
 @pytest.fixture
@@ -211,14 +211,14 @@ class TestCsvReport:
 
 
 class TestApplyFilters:
-    """Tests for the _apply_filters helper."""
+    """Tests for the apply_filters helper."""
 
     def test_filter_by_status(self):
         items = [
             ItemChange(sku="SKU-001", status="changed", name="A", quantity_delta=-5),
             ItemChange(sku="SKU-002", status="added", name="B"),
         ]
-        filtered = _apply_filters(items, filter_status="added")
+        filtered = apply_filters(items, filter_status="added")
         assert len(filtered) == 1
         assert filtered[0].sku == "SKU-002"
 
@@ -227,10 +227,39 @@ class TestApplyFilters:
             ItemChange(sku="SKU-003", status="changed", name="C"),
             ItemChange(sku="SKU-001", status="changed", name="A"),
         ]
-        sorted_items = _apply_filters(items, sort_by="sku")
+        sorted_items = apply_filters(items, sort_by="sku")
         assert sorted_items[0].sku == "SKU-001"
         assert sorted_items[1].sku == "SKU-003"
 
     def test_no_filters_returns_same(self):
         items = [ItemChange(sku="SKU-001", status="changed", name="A")]
-        assert _apply_filters(items) == items
+        assert apply_filters(items) == items
+
+
+class TestCsvNoneHandling:
+    """Verify that None values don't appear as literal 'None' in CSV output."""
+
+    def test_none_fields_are_empty_strings_in_csv(self, tmp_path):
+        result = ReconciliationResult(
+            added=[ItemChange(sku="SKU-001", status="added", name="Widget", new_quantity=10)],
+        )
+        out = tmp_path / "summary.csv"
+        generate_csv_report(result, out)
+        with open(out) as f:
+            rows = list(csv.DictReader(f))
+        row = rows[0]
+        # Fields like old_name, old_location should be empty, not "None"
+        assert row["old_name"] == ""
+        assert row["old_location"] == ""
+        assert row["priority"] == ""
+        assert "None" not in row.values()
+
+    def test_run_id_omitted_when_not_set(self, tmp_path):
+        result = ReconciliationResult(
+            unchanged=[ItemChange(sku="SKU-001", status="unchanged", name="A",
+                                  old_quantity=10, new_quantity=10, quantity_delta=0)],
+        )
+        out = tmp_path / "report.json"
+        generate_json_report(result, out)
+        data = json.loads(out.read_text())
+        assert "run_id" not in data["metadata"]

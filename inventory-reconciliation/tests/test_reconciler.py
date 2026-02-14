@@ -419,8 +419,12 @@ class TestReconcileFuzzyNameMatching:
         })
         result = reconcile(df1, df2)
         item = result.changed[0]
+        assert item.status == "changed"
         assert item.name_changed is True
+        assert item.old_name == "Multimeter Pro"
+        assert item.new_name == "Multimeter Professional"
         assert item.name_similarity is not None
+        assert 0.0 <= item.name_similarity <= 1.0
         assert item.name_similarity > 0.7
 
     def test_different_names_low_score(self):
@@ -677,17 +681,18 @@ class TestReconcileHealthScore:
         assert result.health["data_quality_score"] < 100.0
 
     def test_health_in_json_report(self, tmp_path, clean_snapshot_1, clean_snapshot_2):
-        """Health stats should appear in JSON report."""
+        """Health stats should appear in JSON report with valid values."""
         from reconciliation.reporter import generate_json_report
         import json
         result = reconcile(clean_snapshot_1, clean_snapshot_2)
         out = tmp_path / "report.json"
         generate_json_report(result, out)
         data = json.loads(out.read_text())
-        assert "health" in data
-        assert "accuracy_rate" in data["health"]
-        assert "total_variance" in data["health"]
-        assert "data_quality_score" in data["health"]
+        health = data["health"]
+        assert 0 <= health["accuracy_rate"] <= 100
+        assert health["total_variance"] >= 0
+        assert 0 <= health["data_quality_score"] <= 100
+        assert isinstance(health["variance_by_location"], dict)
 
 
 class TestReconcileSummary:

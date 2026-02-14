@@ -81,8 +81,12 @@ class ItemChange:
         return result
 
     def to_flat_dict(self) -> dict:
-        """Flat representation for CSV output."""
-        return {
+        """Flat representation for CSV output.
+
+        None values are replaced with empty strings so that csv.DictWriter
+        does not write the literal string "None".
+        """
+        raw = {
             "sku": self.sku,
             "status": self.status,
             "name": self.name,
@@ -99,6 +103,7 @@ class ItemChange:
             "name_similarity": self.name_similarity,
             "priority": self.priority,
         }
+        return {k: ("" if v is None else v) for k, v in raw.items()}
 
 
 @dataclass
@@ -114,7 +119,7 @@ class ReconciliationResult:
     skipped_skus: list[str] = field(default_factory=list)
 
     pipeline_log: list[dict] = field(default_factory=list)
-    run_id: str = ""
+    run_id: str | None = None
 
     @property
     def summary(self) -> dict:

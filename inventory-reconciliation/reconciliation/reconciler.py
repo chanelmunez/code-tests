@@ -1,10 +1,20 @@
 """Core reconciliation logic — compare two inventory snapshots."""
 
 import pandas as pd
-from thefuzz import fuzz
+from rapidfuzz import fuzz
 
 from .models import ItemChange, ReconciliationResult, QualityIssue
 from .validator import get_duplicate_skus
+
+
+def _safe_int(value: object) -> int | None:
+    """Convert a value to int, returning None if it can't be parsed."""
+    if value is None:
+        return None
+    try:
+        return int(value)
+    except (ValueError, TypeError):
+        return None
 
 
 def _build_key(df: pd.DataFrame, key_mode: str) -> pd.Series:
@@ -129,23 +139,29 @@ def reconcile(
     # Items only in snapshot_2 (newly added)
     for key in sorted(added_keys):
         row = snap2.loc[key]
+        qty = _safe_int(row["quantity"])
+        if qty is None:
+            continue
         added.append(ItemChange(
             sku=row["sku"],
             status="added",
             name=row["name"],
             location=row["location"],
-            new_quantity=int(row["quantity"]),
+            new_quantity=qty,
         ))
 
     # Items only in snapshot_1 (removed/sold out)
     for key in sorted(removed_keys):
         row = snap1.loc[key]
+        qty = _safe_int(row["quantity"])
+        if qty is None:
+            continue
         removed.append(ItemChange(
             sku=row["sku"],
             status="removed",
             name=row["name"],
             location=row["location"],
-            old_quantity=int(row["quantity"]),
+            old_quantity=qty,
         ))
 
     # Items in both — check for changes
@@ -153,8 +169,10 @@ def reconcile(
         row1 = snap1.loc[key]
         row2 = snap2.loc[key]
 
-        qty1 = int(row1["quantity"])
-        qty2 = int(row2["quantity"])
+        qty1 = _safe_int(row1["quantity"])
+        qty2 = _safe_int(row2["quantity"])
+        if qty1 is None or qty2 is None:
+            continue
         delta = qty2 - qty1
         name1 = row1["name"]
         name2 = row2["name"]
