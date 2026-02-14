@@ -34,6 +34,7 @@ def generate_json_report(
     output_path: str | Path,
     snapshot_1_path: str = "",
     snapshot_2_path: str = "",
+    run_id: str | None = None,
 ) -> None:
     """Write a full structured reconciliation report as JSON."""
     report = {
@@ -41,6 +42,7 @@ def generate_json_report(
             "generated_at": datetime.now().isoformat(),
             "snapshot_1": str(snapshot_1_path),
             "snapshot_2": str(snapshot_2_path),
+            "run_id": run_id or result.run_id,
         },
         "summary": result.summary,
         "health": result.health,

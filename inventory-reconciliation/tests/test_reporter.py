@@ -97,6 +97,12 @@ class TestJsonReport:
         assert data["metadata"]["snapshot_1"] == "data/snap1.csv"
         assert data["metadata"]["snapshot_2"] == "data/snap2.csv"
 
+    def test_metadata_includes_run_id(self, tmp_path, sample_result):
+        out = tmp_path / "report.json"
+        generate_json_report(sample_result, out, run_id="demo-run")
+        data = json.loads(out.read_text())
+        assert data["metadata"]["run_id"] == "demo-run"
+
     def test_creates_parent_directories(self, tmp_path, sample_result):
         out = tmp_path / "nested" / "dir" / "report.json"
         generate_json_report(sample_result, out)

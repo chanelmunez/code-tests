@@ -12,6 +12,7 @@ import argparse
 import json
 import logging
 from pathlib import Path
+from uuid import uuid4
 
 from reconciliation.config import load_config
 from reconciliation.loader import load_snapshot
@@ -137,55 +138,65 @@ def main(argv: list[str] | None = None) -> None:
     output_dir = Path(args.output_dir)
     norm_config = load_config(args.config)
     pipeline_log: list[dict] = []
+    run_id = uuid4().hex
+
+    def log(message: str, *, stage: str | None = None, level: int = logging.INFO, **kwargs) -> None:
+        context = {"stage": stage} if stage else {}
+        context.update(kwargs)
+        context["run_id"] = run_id
+        _log(message, args.log_format, level=level, **context)
 
     # --- Load ---
-    _log(f"Loading {snap1_path} ...", args.log_format, stage="load", file=str(snap1_path))
+    log(f"Loading {snap1_path} ...", stage="load", file=str(snap1_path))
     df1 = load_snapshot(snap1_path)
-    _log(f"  {len(df1)} rows loaded.", args.log_format, stage="load", rows=len(df1))
+    log(f"  {len(df1)} rows loaded.", stage="load", rows=len(df1))
 
-    _log(f"Loading {snap2_path} ...", args.log_format, stage="load", file=str(snap2_path))
+    log(f"Loading {snap2_path} ...", stage="load", file=str(snap2_path))
     df2 = load_snapshot(snap2_path)
-    _log(f"  {len(df2)} rows loaded.", args.log_format, stage="load", rows=len(df2))
+    log(f"  {len(df2)} rows loaded.", stage="load", rows=len(df2))
 
     pipeline_log.append({
         "stage": "load",
+        "run_id": run_id,
         "snapshot_1_rows": len(df1),
         "snapshot_2_rows": len(df2),
     })
 
     # --- Normalize ---
-    _log("Normalizing data ...", args.log_format, stage="normalize")
+    log("Normalizing data ...", stage="normalize")
     df1, issues_1 = normalize_dataframe(df1, "snapshot_1", config=norm_config)
     df2, issues_2 = normalize_dataframe(df2, "snapshot_2", config=norm_config)
     all_issues = issues_1 + issues_2
-    _log(
+    log(
         f"  {len(all_issues)} normalization issues found ({len(issues_1)} snap1, {len(issues_2)} snap2).",
-        args.log_format, stage="normalize", total=len(all_issues),
+        stage="normalize", total=len(all_issues),
         snap1_issues=len(issues_1), snap2_issues=len(issues_2),
     )
 
     pipeline_log.append({
         "stage": "normalize",
+        "run_id": run_id,
         "issues_snapshot_1": len(issues_1),
         "issues_snapshot_2": len(issues_2),
         "total_issues": len(all_issues),
     })
 
     # --- Validate ---
-    _log("Validating data quality ...", args.log_format, stage="validate")
+    log("Validating data quality ...", stage="validate")
     val_issues_1 = validate_snapshot(df1, "snapshot_1")
     val_issues_2 = validate_snapshot(df2, "snapshot_2")
     all_issues.extend(val_issues_1)
     all_issues.extend(val_issues_2)
     error_count = sum(1 for i in all_issues if i.severity == "error")
     warning_count = len(all_issues) - error_count
-    _log(
+    log(
         f"  {error_count} errors, {warning_count} warnings.",
-        args.log_format, stage="validate", errors=error_count, warnings=warning_count,
+        stage="validate", errors=error_count, warnings=warning_count,
     )
 
     pipeline_log.append({
         "stage": "validate",
+        "run_id": run_id,
         "validation_issues_snapshot_1": len(val_issues_1),
         "validation_issues_snapshot_2": len(val_issues_2),
         "total_errors": error_count,
@@ -194,33 +205,30 @@ def main(argv: list[str] | None = None) -> None:
 
     if error_count > 0 and not args.allow_errors:
         error_issues = [issue for issue in all_issues if issue.severity == "error"]
-        _log(
+        log(
             "Error-level data quality issues detected. Aborting before reconciliation. "
             "Re-run with --allow-errors to produce reports anyway.",
-            args.log_format,
             stage="validate",
             level=logging.ERROR,
             errors=error_count,
         )
         for issue in error_issues[:5]:
-            _log(
+            log(
                 f"  [{issue.sku}] {issue.issue_type}: {issue.detail}",
-                args.log_format,
                 stage="validate",
                 level=logging.ERROR,
             )
         remaining = len(error_issues) - 5
         if remaining > 0:
-            _log(
+            log(
                 f"  ... {remaining} additional error issues omitted",
-                args.log_format,
                 stage="validate",
                 level=logging.ERROR,
             )
         raise SystemExit(1)
 
     # --- Reconcile ---
-    _log("Reconciling snapshots ...", args.log_format, stage="reconcile")
+    log("Reconciling snapshots ...", stage="reconcile")
     result = reconcile(
         df1, df2,
         quality_issues=all_issues,
@@ -228,10 +236,12 @@ def main(argv: list[str] | None = None) -> None:
         tolerance=args.tolerance,
         tolerance_pct=args.tolerance_pct,
     )
+    result.run_id = run_id
     result.pipeline_log = pipeline_log
 
     pipeline_log.append({
         "stage": "reconcile",
+        "run_id": run_id,
         "added": len(result.added),
         "removed": len(result.removed),
         "changed": len(result.changed),
@@ -243,42 +253,47 @@ def main(argv: list[str] | None = None) -> None:
     json_path = output_dir / "reconciliation_report.json"
     csv_path = output_dir / "reconciliation_summary.csv"
 
-    generate_json_report(result, json_path, snap1_path, snap2_path)
+    generate_json_report(result, json_path, snap1_path, snap2_path, run_id=run_id)
     generate_csv_report(
         result, csv_path, sort_by=args.sort, filter_status=args.filter_status,
     )
 
-    pipeline_log.append({"stage": "report", "json": str(json_path), "csv": str(csv_path)})
+    pipeline_log.append({
+        "stage": "report",
+        "run_id": run_id,
+        "json": str(json_path),
+        "csv": str(csv_path),
+    })
 
     # --- Summary ---
     summary = result.summary
-    _log("\n" + "=" * 50, args.log_format)
-    _log("RECONCILIATION SUMMARY", args.log_format, stage="summary")
-    _log("=" * 50, args.log_format)
-    _log(f"  Snapshot 1 items (reconciled): {summary['total_snapshot_1']}", args.log_format)
-    _log(f"  Snapshot 2 items (reconciled): {summary['total_snapshot_2']}", args.log_format)
-    _log(f"  Added (new in snapshot 2):     {summary['added']}", args.log_format)
-    _log(f"  Removed (only in snapshot 1):  {summary['removed']}", args.log_format)
-    _log(f"  Changed:                       {summary['changed']}", args.log_format)
-    _log(f"  Unchanged:                     {summary['unchanged']}", args.log_format)
+    log("\n" + "=" * 50)
+    log("RECONCILIATION SUMMARY", stage="summary")
+    log("=" * 50)
+    log(f"  Snapshot 1 items (reconciled): {summary['total_snapshot_1']}")
+    log(f"  Snapshot 2 items (reconciled): {summary['total_snapshot_2']}")
+    log(f"  Added (new in snapshot 2):     {summary['added']}")
+    log(f"  Removed (only in snapshot 1):  {summary['removed']}")
+    log(f"  Changed:                       {summary['changed']}")
+    log(f"  Unchanged:                     {summary['unchanged']}")
     if summary["within_tolerance"] > 0:
-        _log(f"  Within tolerance:              {summary['within_tolerance']}", args.log_format)
-    _log(f"  Skipped (data quality errors): {summary['skipped_due_to_errors']}", args.log_format)
-    _log(f"  Data quality issues:           {summary['quality_issues']}", args.log_format)
-    _log("=" * 50, args.log_format)
+        log(f"  Within tolerance:              {summary['within_tolerance']}")
+    log(f"  Skipped (data quality errors): {summary['skipped_due_to_errors']}")
+    log(f"  Data quality issues:           {summary['quality_issues']}")
+    log("=" * 50)
 
     # --- Health Score ---
     health = result.health
-    _log(f"\n  Inventory accuracy:            {health['accuracy_rate']}%", args.log_format)
-    _log(f"  Total variance (abs):          {health['total_variance']} units", args.log_format)
-    _log(f"  Data quality score:            {health['data_quality_score']}%", args.log_format)
+    log(f"\n  Inventory accuracy:            {health['accuracy_rate']}%")
+    log(f"  Total variance (abs):          {health['total_variance']} units")
+    log(f"  Data quality score:            {health['data_quality_score']}%")
 
     if result.skipped_skus:
-        _log(f"\n  Skipped SKUs: {', '.join(result.skipped_skus)}", args.log_format)
+        log(f"\n  Skipped SKUs: {', '.join(result.skipped_skus)}")
 
-    _log(f"\nReports written to:", args.log_format)
-    _log(f"  JSON: {json_path}", args.log_format)
-    _log(f"  CSV:  {csv_path}", args.log_format)
+    log(f"\nReports written to:")
+    log(f"  JSON: {json_path}")
+    log(f"  CSV:  {csv_path}")
 
 
 if __name__ == "__main__":

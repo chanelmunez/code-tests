@@ -14,9 +14,15 @@ PROJECT_DIR = Path(__file__).parent.parent
 class TestCli:
     """Test the reconcile.py script via subprocess."""
 
-    def test_runs_successfully_with_defaults(self):
+    def test_runs_successfully_with_defaults(self, tmp_path):
         result = subprocess.run(
-            [sys.executable, "reconcile.py", "--allow-errors"],
+            [
+                sys.executable,
+                "reconcile.py",
+                "--allow-errors",
+                "--output-dir",
+                str(tmp_path),
+            ],
             capture_output=True, text=True, cwd=PROJECT_DIR,
         )
         assert result.returncode == 0
@@ -54,9 +60,15 @@ class TestCli:
         assert "reconciliation" in report
         assert "quality_issues" in report
 
-    def test_summary_output_counts(self):
+    def test_summary_output_counts(self, tmp_path):
         result = subprocess.run(
-            [sys.executable, "reconcile.py", "--allow-errors"],
+            [
+                sys.executable,
+                "reconcile.py",
+                "--allow-errors",
+                "--output-dir",
+                str(tmp_path),
+            ],
             capture_output=True, text=True, cwd=PROJECT_DIR,
         )
         output = result.stdout + result.stderr

@@ -20,6 +20,7 @@ pytest  # 203 passed in ~4.1s on Python 3.12
 | CLI / End-to-End | `tests/test_cli.py`, `tests/test_integration.py` |
 | Hardening / Edge Cases | `tests/test_hardening.py`, `tests/test_new_edge_cases.py` |
 | Advice Regression Suites | `tests/test_advice_coverage.py`, `tests/test_quality_gaps.py` |
+| Configuration | `tests/test_config.py` |
 
 ## Recent Additions
 
@@ -31,7 +32,6 @@ pytest  # 203 passed in ~4.1s on Python 3.12
 
 | Gap | Impact | Planned Action |
 |-----|--------|----------------|
-| Generated artefacts remain in repo after tests (`output/`, `.coverage`) | Dirty working tree post-`pytest` | Update tests to use temp dirs (where possible) and extend `.gitignore` |
 | Multi-warehouse / ABC cycle-count strategies untested | Limits confidence for future feature work | Add design + tests once feature work begins |
 
 ## How to Run
@@ -46,5 +46,6 @@ pytest  # 203 passed in ~4.1s on Python 3.12
 - **pytest** with builtin fixtures plus `tmp_path` for isolated CLI runs.
 - **pandas** for creating in-memory DataFrames during normalization/validation tests.
 - **subprocess** module in tests to run `reconcile.py` the way a user would.
+- **CI**: `.github/workflows/tests.yml` runs `pytest` on every push/PR using Python 3.12.
 
 Maintain this document as the authoritative source for QA scope, recent changes, and remaining test gaps.

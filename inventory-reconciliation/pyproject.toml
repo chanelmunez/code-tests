@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=65", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "inventory-reconciliation"
+version = "0.1.0"
+description = "Pipeline for reconciling inventory snapshots and generating reports"
+readme = "PROJECT-README.md"
+authors = [{name = "Assessment Candidate"}]
+requires-python = ">=3.12"
+dependencies = [
+    "pandas>=2.0.0",
+    "PyYAML>=6.0",
+    "thefuzz[speedup]>=0.22.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0.0"]
+
+[tool.setuptools]
+packages = ["reconciliation"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+addopts = "-ra"

@@ -114,6 +114,7 @@ class ReconciliationResult:
     skipped_skus: list[str] = field(default_factory=list)
 
     pipeline_log: list[dict] = field(default_factory=list)
+    run_id: str = ""
 
     @property
     def summary(self) -> dict:

@@ -3,13 +3,13 @@
 ## Test Coverage Report
 
 **Date**: 2026-02-13
-**Status**: 201 passed, 0 failed
+**Status**: 204 passed, 0 failed
 
 | Module | Tests |
 |:---|:---:|
 | `test_loader.py` | 8 |
-| `test_normalizer.py` | 30 |
-| `test_validator.py` | 13 |
+| `test_normalizer.py` | 46 |
+| `test_validator.py` | 17 |
 | `test_reconciler.py` | 50 |
 | `test_reporter.py` | 23 |
 | `test_integration.py` | 16 |
@@ -19,7 +19,7 @@
 | `test_hardening.py` | 9 |
 | `test_new_edge_cases.py` | 4 |
 | `test_advice_coverage.py` | 6 |
-| **TOTAL** | **201** |
+| **TOTAL** | **204** |
 
 ## Hardening Tests Added
 

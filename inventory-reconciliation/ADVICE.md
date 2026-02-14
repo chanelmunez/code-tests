@@ -68,29 +68,19 @@ The remaining gaps are operational polish items that would matter in a productio
 
 ### High Priority — Address Before Submission
 
-1. **Add `.gitignore`**: Generated artifacts (`output/`, `.coverage`, `__pycache__/`) are tracked in git. This clutters diffs and commits stale reports. A standard Python `.gitignore` should be added.
+1. **CLI feature coverage**: Add tests that exercise `--sort`, `--filter`, and tolerance flags end-to-end to prevent regressions in those code paths.
 
-2. **CLI exit code**: The CLI returns 0 even when error-level quality issues are found. For a production tool, non-zero exit on errors enables CI/CD gating. For this assessment, documenting the current behavior as a deliberate choice (permissive mode — skip bad SKUs and continue) is sufficient.
-
-3. **Clean up this ADVICE.md**: The previous version was a chronological review log mixing resolved and unresolved items. This rewrite addresses that. Prior review notes are preserved in git history.
+2. **Performance baseline**: The hardening suite tops out at 1k rows. Profiling against a 100k-row snapshot (and documenting throughput) would strengthen the story for production readiness.
 
 ### Medium Priority — Nice to Have
 
-4. **CLI error-path tests**: Current CLI tests cover happy paths and file-not-found. Adding tests for `--sort`, `--filter`, and scenarios with quality errors would strengthen coverage.
+3. **ABC analysis integration**: Prioritize SKUs by business value/turnover for cycle counting — industry standard practice referenced in prior research.
 
-5. **Output directory auto-creation**: The reporter already calls `mkdir(parents=True, exist_ok=True)`, so this is handled. Verify that the CLI doesn't fail if `output/` doesn't exist on a fresh clone.
+4. **Multi-cycle tracking**: Compare reconciliation results across time periods to identify persistent discrepancies and trends.
 
-6. **Performance baseline**: The hardening suite tests 1,000 rows. A 100k-row benchmark would demonstrate scalability awareness, but is not essential for this scope.
+5. **Root-cause classification**: Categorize discrepancies into buckets (shrinkage, receiving errors, system bugs, human error) for warehouse operations teams.
 
-### Low Priority — Future Enhancements
-
-7. **ABC analysis integration**: Prioritize SKUs by business value/turnover for cycle counting — industry standard practice referenced in prior research.
-
-8. **Multi-cycle tracking**: Compare reconciliation results across time periods to identify persistent discrepancies and trends.
-
-9. **Root-cause classification**: Categorize discrepancies into buckets (shrinkage, receiving errors, system bugs, human error) for warehouse operations teams.
-
-10. **Plugin architecture**: Allow custom quality checks and normalization rules to be registered without modifying core modules.
+6. **Plugin architecture**: Allow custom quality checks and normalization rules to be registered without modifying core modules.
 
 ---
 
@@ -170,3 +160,19 @@ While the engineering work is excellent, a few "product" and "operational" gaps 
 1.  **Docs**: Add a link in `README.md` to `PROJECT-README.md`.
 2.  **Git**: Ensure `.gitignore` is present.
 3.  **CI**: Create a simple GitHub Actions workflow.
+
+---
+
+## Addendum — Fri Feb 13 17:45 CST 2026
+
+Since the earlier review notes were captured, the following items have been completed:
+
+- `.gitignore`, `pyproject.toml`, `Dockerfile`, and a GitHub Actions test workflow have been added.
+- The CLI now fails fast on error-level issues by default (`--allow-errors` opt-in) and augments logs/reports with a `run_id` for tracing.
+- README vs. PROJECT-README split is documented; the practical instructions live in PROJECT-README without overwriting the hiring brief.
+
+The updated short-term focus is now:
+
+1. Expand CLI end-to-end tests to cover the advanced flags (`--sort`, `--filter`, tolerance options).
+2. Establish a performance baseline on larger datasets (>=100k rows) and document results.
+3. Design/plan ABC cycle-count prioritization and recurring reconciliation comparisons.

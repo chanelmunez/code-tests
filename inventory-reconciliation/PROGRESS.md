@@ -5,7 +5,7 @@ _Last updated: 2026-02-13_
 ## Current Snapshot
 
 - **Codebase**: Modular pipeline (load → normalize → validate → reconcile → report) implemented under `reconciliation/` with CLI entry point `reconcile.py`.
-- **Tests**: 203 passing tests covering unit, integration, CLI, hardening, regression, and configuration suites.
+- **Tests**: 204 passing tests covering unit, integration, CLI, hardening, regression, and configuration suites.
 - **Reports**: JSON + CSV artefacts written to `output/` (overridable via `--output-dir`).
 - **Reviews**: Running critique/advice captured in `ADVICE.md`.
 
@@ -18,6 +18,8 @@ _Last updated: 2026-02-13_
 | Advice-driven QA | ✅ | Added regression tests (`tests/test_quality_gaps.py`), integration count assertions |
 | Config & Docs | ✅ | Added YAML configuration, updated README/NOTES/PROGRESS |
 | Logic Robustness (Phase 3) | ✅ | Unicode/Casing normalization, strict severity enforcement, CSV loader `NaN` fix |
+| Packaging & CI | ✅ | Added `pyproject.toml`, Dockerfile, and GitHub Actions workflow |
+| PM Review | ✅ | Comprehensive ADVICE.md rewrite with project state assessment, risk matrix, and recommendations |
 
 **Recent activity (Chronological)**
 
@@ -29,12 +31,13 @@ _Last updated: 2026-02-13_
 6.  **Config & Regressions**: Added `test_config.py` and `test_quality_gaps.py` (Other Contributors).
 7.  **Advanced Normalization**: Implemented `NFKC` Unicode normalization and Title Case for locations (`test_new_edge_cases.py`).
 8.  **Loader Robustness**: Updated `loader.py` with `keep_default_na=False` to prevent `NaN` injection on empty strings.
-9.  **Severity Enforcement**: Implemented strict skipping of SKUs with error-level issues (verified in `test_advice_coverage.py`).
+9.  **Severity Enforcement + Run IDs**: Implemented strict skipping of SKUs with error-level issues, fail-fast CLI behavior, and run-id-based logging.
+10. **Packaging & CI**: Added `pyproject.toml`, Dockerfile, and GitHub Actions workflow to automate installs/tests.
 
 ## Test Matrix
 
 ```
-pytest  # 203 passed in ~4.1s on Python 3.12
+pytest  # 204 passed in ~4.2s on Python 3.12
 ```
 
 Key suites:
@@ -65,6 +68,6 @@ Key suites:
 
 | Item | Detail | Owner |
 |------|--------|-------|
-| Generated artefacts | Default CLI run dirties `output/` and `.coverage`; add `.gitignore` entries or temp-output strategy. | Eng |
+| ~~Generated artefacts~~ | Resolved — `.gitignore` added covering `output/`, `.coverage`, `__pycache__/` | Done |
 | Data enrichment | Future enhancement: enrich SKUs with master data (UoM, pack size) to detect additional mismatches. | TBD |
 | Performance | Scale testing for >100k rows (current `testing-huge.csv` is 1k). | QA |
