@@ -181,3 +181,92 @@ class TestCli:
         )
         assert result.returncode == 0
         assert (tmp_path / "reconciliation_report.json").exists()
+
+    def test_sort_flag(self, tmp_path):
+        """--sort delta should produce a CSV sorted by largest delta first."""
+        result = subprocess.run(
+            [
+                sys.executable, "reconcile.py",
+                "--output-dir", str(tmp_path),
+                "--allow-errors",
+                "--sort", "delta",
+            ],
+            capture_output=True, text=True, cwd=PROJECT_DIR,
+        )
+        assert result.returncode == 0
+        import csv
+        with open(tmp_path / "reconciliation_summary.csv") as f:
+            rows = list(csv.DictReader(f))
+        deltas = [abs(int(r["quantity_delta"])) for r in rows if r["quantity_delta"]]
+        assert deltas == sorted(deltas, reverse=True)
+
+    def test_filter_flag(self, tmp_path):
+        """--filter changed should only include changed items in CSV."""
+        result = subprocess.run(
+            [
+                sys.executable, "reconcile.py",
+                "--output-dir", str(tmp_path),
+                "--allow-errors",
+                "--filter", "changed",
+            ],
+            capture_output=True, text=True, cwd=PROJECT_DIR,
+        )
+        assert result.returncode == 0
+        import csv
+        with open(tmp_path / "reconciliation_summary.csv") as f:
+            rows = list(csv.DictReader(f))
+        assert len(rows) > 0
+        assert all(r["status"] == "changed" for r in rows)
+
+    def test_tolerance_flag(self, tmp_path):
+        """--tolerance should classify small deltas as within_tolerance."""
+        snap1 = tmp_path / "s1.csv"
+        snap2 = tmp_path / "s2.csv"
+        snap1.write_text("sku,name,quantity,location,last_counted\nSKU-001,A,100,WA,2024-01-08\n")
+        snap2.write_text("sku,product_name,qty,warehouse,updated_at\nSKU-001,A,98,WA,2024-01-15\n")
+
+        out_dir = tmp_path / "out"
+        result = subprocess.run(
+            [
+                sys.executable, "reconcile.py",
+                "--snapshot1", str(snap1),
+                "--snapshot2", str(snap2),
+                "--output-dir", str(out_dir),
+                "--tolerance", "5",
+            ],
+            capture_output=True, text=True, cwd=PROJECT_DIR,
+        )
+        assert result.returncode == 0
+        report = json.loads((out_dir / "reconciliation_report.json").read_text())
+        assert report["summary"]["within_tolerance"] == 1
+        assert report["summary"]["changed"] == 0
+
+    def test_key_mode_flag(self, tmp_path):
+        """--key-mode sku_location should use composite key."""
+        snap1 = tmp_path / "s1.csv"
+        snap2 = tmp_path / "s2.csv"
+        snap1.write_text(
+            "sku,name,quantity,location,last_counted\n"
+            "SKU-001,A,100,WA,2024-01-08\n"
+            "SKU-002,B,50,WB,2024-01-08\n"
+        )
+        snap2.write_text(
+            "sku,product_name,qty,warehouse,updated_at\n"
+            "SKU-001,A,90,WA,2024-01-15\n"
+            "SKU-002,B,55,WB,2024-01-15\n"
+        )
+
+        out_dir = tmp_path / "out"
+        result = subprocess.run(
+            [
+                sys.executable, "reconcile.py",
+                "--snapshot1", str(snap1),
+                "--snapshot2", str(snap2),
+                "--output-dir", str(out_dir),
+                "--key-mode", "sku_location",
+            ],
+            capture_output=True, text=True, cwd=PROJECT_DIR,
+        )
+        assert result.returncode == 0
+        report = json.loads((out_dir / "reconciliation_report.json").read_text())
+        assert report["summary"]["changed"] == 2

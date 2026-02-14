@@ -707,3 +707,96 @@ class TestReconcileSummary:
         assert summary["unchanged"] == 1
         assert summary["total_snapshot_1"] == 5  # 1 removed + 3 changed + 1 unchanged
         assert summary["total_snapshot_2"] == 5  # 1 added + 3 changed + 1 unchanged
+
+
+class TestSafeIntCoercion:
+    """Verify that unparseable quantities don't crash the reconciler."""
+
+    def test_none_quantity_skipped(self):
+        df1 = pd.DataFrame({
+            "sku": ["SKU-001"], "name": ["Widget"],
+            "quantity": [None], "location": ["WA"], "date": ["2024-01-08"],
+        })
+        df2 = pd.DataFrame({
+            "sku": ["SKU-001"], "name": ["Widget"],
+            "quantity": ["100"], "location": ["WA"], "date": ["2024-01-15"],
+        })
+        result = reconcile(df1, df2)
+        # Item with None quantity is silently skipped, not crashed
+        assert len(result.changed) == 0
+        assert len(result.unchanged) == 0
+
+    def test_empty_string_quantity_skipped(self):
+        df1 = pd.DataFrame({
+            "sku": ["SKU-001"], "name": ["Widget"],
+            "quantity": [""], "location": ["WA"], "date": ["2024-01-08"],
+        })
+        df2 = pd.DataFrame({
+            "sku": ["SKU-001"], "name": ["Widget"],
+            "quantity": ["50"], "location": ["WA"], "date": ["2024-01-15"],
+        })
+        result = reconcile(df1, df2)
+        assert len(result.changed) == 0
+
+    def test_non_numeric_quantity_skipped(self):
+        df1 = pd.DataFrame({
+            "sku": ["SKU-001"], "name": ["Widget"],
+            "quantity": ["abc"], "location": ["WA"], "date": ["2024-01-08"],
+        })
+        df2 = pd.DataFrame({
+            "sku": ["SKU-001"], "name": ["Widget"],
+            "quantity": ["50"], "location": ["WA"], "date": ["2024-01-15"],
+        })
+        result = reconcile(df1, df2)
+        assert len(result.changed) == 0
+
+
+class TestRealSampleData:
+    """Regression test against the actual assessment data files."""
+
+    def test_sample_data_reconciliation_counts(self):
+        """Run full pipeline on real data and assert known output counts."""
+        from reconciliation.loader import load_snapshot
+        from reconciliation.normalizer import normalize_dataframe
+        from reconciliation.validator import validate_snapshot
+
+        df1 = load_snapshot("data/snapshot_1.csv")
+        df2 = load_snapshot("data/snapshot_2.csv")
+        df1, issues_1 = normalize_dataframe(df1, "snapshot_1")
+        df2, issues_2 = normalize_dataframe(df2, "snapshot_2")
+        val_1 = validate_snapshot(df1, "snapshot_1")
+        val_2 = validate_snapshot(df2, "snapshot_2")
+        all_issues = issues_1 + issues_2 + val_1 + val_2
+
+        result = reconcile(df1, df2, quality_issues=all_issues)
+        summary = result.summary
+
+        assert summary["added"] == 5
+        assert summary["removed"] == 2
+        assert summary["changed"] == 70
+        assert summary["unchanged"] == 2
+        assert summary["skipped_due_to_errors"] == 1
+        assert "SKU-045" in result.skipped_skus
+
+    def test_sample_data_health_metrics_sensible(self):
+        """Health metrics on real data should be within valid ranges."""
+        from reconciliation.loader import load_snapshot
+        from reconciliation.normalizer import normalize_dataframe
+        from reconciliation.validator import validate_snapshot
+
+        df1 = load_snapshot("data/snapshot_1.csv")
+        df2 = load_snapshot("data/snapshot_2.csv")
+        df1, issues_1 = normalize_dataframe(df1, "snapshot_1")
+        df2, issues_2 = normalize_dataframe(df2, "snapshot_2")
+        val_1 = validate_snapshot(df1, "snapshot_1")
+        val_2 = validate_snapshot(df2, "snapshot_2")
+        all_issues = issues_1 + issues_2 + val_1 + val_2
+
+        result = reconcile(df1, df2, quality_issues=all_issues)
+        health = result.health
+
+        assert 0 <= health["accuracy_rate"] <= 100
+        assert health["total_variance"] >= 0
+        assert 0 <= health["data_quality_score"] <= 100
+        assert isinstance(health["variance_by_location"], dict)
+        assert len(health["variance_by_location"]) > 0

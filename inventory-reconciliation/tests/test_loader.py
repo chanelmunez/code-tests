@@ -69,3 +69,11 @@ class TestLoadSnapshot:
         path.write_text(" sku , name , quantity , location , last_counted \nSKU-001,W,1,WA,2024-01-08\n")
         df = load_snapshot(path)
         assert set(df.columns) == {"sku", "name", "quantity", "location", "date"}
+
+    def test_handles_utf8_bom(self, tmp_path):
+        """CSV exported from Windows Excel with UTF-8 BOM should load correctly."""
+        path = tmp_path / "bom.csv"
+        path.write_bytes(b"\xef\xbb\xbfsku,name,quantity,location,last_counted\nSKU-001,Widget,10,WA,2024-01-08\n")
+        df = load_snapshot(path)
+        assert "sku" in df.columns
+        assert df.iloc[0]["sku"] == "SKU-001"
