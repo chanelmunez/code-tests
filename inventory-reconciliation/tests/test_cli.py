@@ -1,5 +1,6 @@
 """Tests for the CLI entry point (reconcile.py)."""
 
+import csv
 import json
 import subprocess
 import sys
@@ -9,6 +10,13 @@ import pytest
 
 
 PROJECT_DIR = Path(__file__).parent.parent
+
+
+def _write_snapshot(path: Path, rows: list[tuple[str, str, int, str, str]]) -> None:
+    with open(path, "w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(["sku", "name", "quantity", "location", "last_counted"])
+        writer.writerows(rows)
 
 
 class TestCli:
@@ -181,6 +189,101 @@ class TestCli:
         )
         assert result.returncode == 0
         assert (tmp_path / "reconciliation_report.json").exists()
+
+    def test_cli_sort_and_filter_flags(self, tmp_path):
+        snap1 = tmp_path / "snap1.csv"
+        snap2 = tmp_path / "snap2.csv"
+        _write_snapshot(snap1, [
+            ("SKU-101", "Widget", 100, "WA", "2024-01-01"),
+            ("SKU-102", "Gadget", 200, "WA", "2024-01-01"),
+        ])
+        _write_snapshot(snap2, [
+            ("SKU-101", "Widget", 80, "WA", "2024-01-08"),
+            ("SKU-102", "Gadget", 150, "WA", "2024-01-08"),
+        ])
+        out_dir = tmp_path / "out"
+        result = subprocess.run(
+            [
+                sys.executable,
+                "reconcile.py",
+                "--snapshot1",
+                str(snap1),
+                "--snapshot2",
+                str(snap2),
+                "--output-dir",
+                str(out_dir),
+                "--sort",
+                "delta",
+                "--filter",
+                "changed",
+            ],
+            capture_output=True,
+            text=True,
+            cwd=PROJECT_DIR,
+        )
+        assert result.returncode == 0
+        csv_path = out_dir / "reconciliation_summary.csv"
+        with open(csv_path) as f:
+            rows = list(csv.DictReader(f))
+        assert len(rows) == 2
+        assert rows[0]["sku"] == "SKU-102"  # largest delta first
+        assert rows[1]["sku"] == "SKU-101"
+
+    def test_cli_tolerance_flag(self, tmp_path):
+        snap1 = tmp_path / "tol1.csv"
+        snap2 = tmp_path / "tol2.csv"
+        _write_snapshot(snap1, [("SKU-201", "Cable", 100, "WA", "2024-01-01")])
+        _write_snapshot(snap2, [("SKU-201", "Cable", 102, "WA", "2024-01-08")])
+        out_dir = tmp_path / "out_tol"
+        result = subprocess.run(
+            [
+                sys.executable,
+                "reconcile.py",
+                "--snapshot1",
+                str(snap1),
+                "--snapshot2",
+                str(snap2),
+                "--output-dir",
+                str(out_dir),
+                "--tolerance",
+                "5",
+            ],
+            capture_output=True,
+            text=True,
+            cwd=PROJECT_DIR,
+        )
+        assert result.returncode == 0
+        data = json.loads((out_dir / "reconciliation_report.json").read_text())
+        assert data["summary"]["within_tolerance"] == 1
+
+    def test_cli_composite_key_mode(self, tmp_path):
+        snap1 = tmp_path / "loc1.csv"
+        snap2 = tmp_path / "loc2.csv"
+        _write_snapshot(snap1, [("SKU-301", "Widget", 50, "WA", "2024-01-01")])
+        _write_snapshot(snap2, [("SKU-301", "Widget", 60, "WB", "2024-01-08")])
+        out_dir = tmp_path / "out_loc"
+        result = subprocess.run(
+            [
+                sys.executable,
+                "reconcile.py",
+                "--snapshot1",
+                str(snap1),
+                "--snapshot2",
+                str(snap2),
+                "--output-dir",
+                str(out_dir),
+                "--key-mode",
+                "sku_location",
+            ],
+            capture_output=True,
+            text=True,
+            cwd=PROJECT_DIR,
+        )
+        assert result.returncode == 0
+        data = json.loads((out_dir / "reconciliation_report.json").read_text())
+        # With composite key, location change becomes removal+addition
+        assert data["summary"]["removed"] == 1
+        assert data["summary"]["added"] == 1
 
     def test_sort_flag(self, tmp_path):
         """--sort delta should produce a CSV sorted by largest delta first."""
