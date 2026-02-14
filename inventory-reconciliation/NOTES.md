@@ -2,7 +2,7 @@
 
 ## Approach
 
-I built a modular pipeline that processes the snapshots in five stages: **load → normalize → validate → reconcile → report**. Each stage is a separate module with its own unit tests (204 total), making the logic easy to verify and extend.
+I built a modular pipeline that processes the snapshots in five stages: **load → normalize → validate → reconcile → report**. Each stage is a separate module with its own unit tests (219 total), making the logic easy to verify and extend.
 
 The loader standardizes the different column names between files (`name`/`product_name`, `quantity`/`qty`, etc.) into a common schema. The normalizer cleans the raw data — fixing SKU formats, stripping whitespace, converting float quantities to integers, and normalizing date formats — while logging every correction as a quality issue. Normalization rules are configurable via YAML. The validator runs semantic checks (duplicates, negative quantities, missing values across all fields). The reconciler joins the two clean datasets by key (SKU or SKU+location composite) and classifies each item as added, removed, changed, within tolerance, or unchanged. Changed items receive a priority rating and fuzzy name similarity score. Finally, the reporter generates JSON and CSV output with optional sorting and filtering.
 

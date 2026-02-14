@@ -5,7 +5,7 @@ _Last updated: 2026-02-13_
 ## Current Snapshot
 
 - **Codebase**: Modular pipeline (load → normalize → validate → reconcile → report) implemented under `reconciliation/` with CLI entry point `reconcile.py`.
-- **Tests**: 216 passing tests covering unit, integration, CLI, hardening, regression, and configuration suites.
+- **Tests**: 219 passing tests covering unit, integration, CLI, hardening, regression, and configuration suites.
 - **Reports**: JSON + CSV artefacts written to `output/` (overridable via `--output-dir`).
 - **Reviews**: Running critique/advice captured in `ADVICE.md`.
 
@@ -38,7 +38,7 @@ _Last updated: 2026-02-13_
 ## Test Matrix
 
 ```
-pytest  # 216 passed in ~5.6s on Python 3.12
+pytest  # 219 passed in ~6.5s on Python 3.12
 ```
 
 Key suites:

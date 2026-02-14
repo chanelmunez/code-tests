@@ -7,7 +7,7 @@ _Last updated: 2026-02-13_
 The project ships with a pytest suite that exercises the entire pipeline—from CSV ingestion through reporting—plus CLI subprocess tests and regression suites distilled from ongoing reviews.
 
 ```
-pytest  # 204 passed in ~4.1s on Python 3.12
+pytest  # 219 passed in ~6.5s on Python 3.12
 ```
 
 ## Coverage Highlights
